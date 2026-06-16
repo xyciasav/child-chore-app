@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Chore Tracker</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-weight: 500;
+        }
+        
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn:hover {
+            background-color: #5a67d8;
+        }
+        
+        .error {
+            color: #e53e3e;
+            text-align: center;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #fff5f5;
+            border-radius: 8px;
+        }
+        
+        .info {
+            text-align: center;
+            margin-top: 20px;
+            color: #718096;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1> Admin Login 🔐 </h1>
+        
+        {% if error %}
+        <p class="error">Invalid passcode. Please try again.</p>
+        {% endif %}
+        
+        <form method="post" action="/admin/login">
+            <div class="form-group">
+                <label for="passcode">Parent Passcode</label>
+                <input type="password" id="passcode" name="passcode" required placeholder="Enter admin passcode">
+            </div>
+            
+            <button type="submit" class="btn">Login to Admin Panel</button>
+        </form>
+        
+        <p class="info">
+            Default passcode: <strong>parent123</strong><br>
+            Change with environment variable: ADMIN_PASSCODE
+        </p>
+    </div>
+</body>
+</html>

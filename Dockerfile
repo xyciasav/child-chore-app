@@ -5,8 +5,10 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# Copy app directory contents to /app/app
+COPY app/ ./app/
 
+# Create instance directory for database
 RUN mkdir -p /app/instance
 
 EXPOSE 8000

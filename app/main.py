@@ -1,6 +1,7 @@
 import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from app.database import engine, init_db
 from app.models import Base
@@ -29,6 +30,13 @@ app.include_router(api_router)
 
 
 @app.get("/")
-async def homepage(request):
+async def homepage(request: Request):
     """Redirect to kid dashboard by default."""
-    return templates.TemplateResponse("kid_dashboard.html", {"request": request})
+    return RedirectResponse(url="/kid")
+
+
+@app.get("/favicon.ico")
+async def favicon():
+    """Return empty response for favicon requests."""
+    from fastapi.responses import Response
+    return Response(content=None, media_type="image/x-icon")
