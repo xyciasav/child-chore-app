@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Chore Tracker - Admin{% endblock %}
+{% block header %}⚙️ Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Navigation Tabs -->
+    <nav class="admin-nav">
+        <button class="tab-btn active" data-tab="pending-chores">Pending Chores</button>
+        <button class="tab-btn" data-tab="manage-chores">Manage Chores</button>
+        <button class="tab-btn" data-tab="pending-rewards">Pending Rewards</button>
+        <button class="tab-btn" data-tab="manage-rewards">Manage Rewards</button>
+        <button class="tab-btn" data-tab="children">Children</button>
+    </nav>
+
+    <!-- Pending Chore Approvals -->
+    <div id="pending-chores" class="tab-content active">
+        <h2>Pending Chore Approvals ({{ pending_chores|length }})</h2>
+        {% if pending_chores %}
+        <div class="approval-list">
+            {% for submission in pending_chores %}
+            <div class="approval-item">
+                <div class="approval-info">
+                    <strong>{{ submission.child.name }}</strong> completed 
+                    <strong>{{ submission.chore.title }}</strong>
+                    <span class="coin-value">(+{{ submission.chore.coin_value }} 🪙)</span>
+                </div>
+                <div class="approval-actions">
+                    <form action="/admin/chore/approve" method="post" class="inline-form">
+                        <input type="hidden" name="submission_id" value="{{ submission.id }}">
+                        <button type="submit" class="btn btn-success">✓ Approve</button>
+                    </form>
+                    <form action="/admin/chore/deny" method="post" class="inline-form">
+                        <input type="hidden" name="submission_id" value="{{ submission.id }}">
+                        <button type="submit" class="btn btn-danger">✗ Deny</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="empty-state">No pending chore approvals. Great! 🎉</p>
+        {% endif %}
+    </div>
+
+    <!-- Manage Chores -->
+    <div id="manage-chores" class="tab-content">
+        <h2>Manage Chores</h2>
+        
+        <!-- Add New Chore Form -->
+        <div class="admin-form-box">
+            <h3>Add New Chore</h3>
+            <form action="/admin/chore/add" method="post" class="admin-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="chore-title">Title:</label>
+                        <input type="text" id="chore-title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="chore-coin-value">Coins:</label>
+                        <input type="number" id="chore-coin-value" name="coin_value" step="0.1" value="1.0" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="chore-description">Description:</label>
+                    <textarea id="chore-description" name="description" rows="2"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Chore</button>
+            </form>
+        </div>
+
+        <!-- Existing Chores List -->
+        <div class="manage-list">
+            {% for chore in chores %}
+            <div class="manage-item">
+                <div class="manage-info">
+                    <strong>{{ chore.title }}</strong>
+                    <span class="coin-value">{{ chore.coin_value }} 🪙</span>
+                    <span class="status-badge status-{{ 'active' if chore.active else 'inactive' }}">
+                        {{ 'Active' if chore.active else 'Inactive' }}
+                    </span>
+                </div>
+                <div class="manage-actions">
+                    <form action="/admin/chore/delete" method="post" class="inline-form">
+                        <input type="hidden" name="chore_id" value="{{ chore.id }}">
+                        <button type="submit" class="btn btn-danger" 
+                                onclick="return confirm('Delete this chore?')">
+                            Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Pending Reward Redemptions -->
+    <div id="pending-rewards" class="tab-content">
+        <h2>Pending Reward Requests ({{ pending_rewards|length }})</h2>
+        {% if pending_rewards %}
+        <div class="approval-list">
+            {% for redemption in pending_rewards %}
+            <div class="approval-item">
+                <div class="approval-info">
+                    <strong>{{ redemption.child.name }}</strong> wants 
+                    <strong>{{ redemption.reward.title }}</strong>
+                    <span class="coin-value">(-{{ redemption.reward.coin_cost }} 🪙)</span>
+                </div>
+                <div class="approval-actions">
+                    <form action="/admin/reward/approve" method="post" class="inline-form">
+                        <input type="hidden" name="redemption_id" value="{{ redemption.id }}">
+                        <button type="submit" class="btn btn-success">✓ Approve</button>
+                    </form>
+                    <form action="/admin/reward/deny" method="post" class="inline-form">
+                        <input type="hidden" name="redemption_id" value="{{ redemption.id }}">
+                        <button type="submit" class="btn btn-danger">✗ Deny</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="empty-state">No pending reward requests. 🎉</p>
+        {% endif %}
+    </div>
+
+    <!-- Manage Rewards -->
+    <div id="manage-rewards" class="tab-content">
+        <h2>Manage Rewards</h2>
+        
+        <!-- Add New Reward Form -->
+        <div class="admin-form-box">
+            <h3>Add New Reward</h3>
+            <form action="/admin/reward/add" method="post" class="admin-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="reward-title">Title:</label>
+                        <input type="text" id="reward-title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reward-coin-cost">Coin Cost:</label>
+                        <input type="number" id="reward-coin-cost" name="coin_cost" step="0.1" value="1.0" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="reward-description">Description:</label>
+                    <textarea id="reward-description" name="description" rows="2"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Reward</button>
+            </form>
+        </div>
+
+        <!-- Existing Rewards List -->
+        <div class="manage-list">
+            {% for reward in rewards %}
+            <div class="manage-item">
+                <div class="manage-info">
+                    <strong>{{ reward.title }}</strong>
+                    <span class="coin-value">{{ reward.coin_cost }} 🪙</span>
+                    <span class="status-badge status-{{ 'active' if reward.active else 'inactive' }}">
+                        {{ 'Active' if reward.active else 'Inactive' }}
+                    </span>
+                </div>
+                <div class="manage-actions">
+                    <form action="/admin/reward/delete" method="post" class="inline-form">
+                        <input type="hidden" name="reward_id" value="{{ reward.id }}">
+                        <button type="submit" class="btn btn-danger" 
+                                onclick="return confirm('Delete this reward?')">
+                            Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Children -->
+    <div id="children" class="tab-content">
+        <h2>Children</h2>
+        <div class="manage-list">
+            {% for child in children %}
+            <div class="manage-item">
+                <div class="manage-info">
+                    <strong>{{ child.name }}</strong>
+                    <span class="coin-value">{{ child.coins }} 🪙</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Logout -->
+    <div class="logout-section">
+        <form action="/admin/logout" method="post">
+            <button type="submit" class="btn btn-outline">Logout</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Tab navigation
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        // Remove active class from all tabs and content
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        // Add active class to clicked tab and corresponding content
+        this.classList.add('active');
+        document.getElementById(this.dataset.tab).classList.add('active');
+    });
+});
+</script>
+{% endblock %}

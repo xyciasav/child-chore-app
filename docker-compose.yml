@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  chore-tracker:
+    build: .
+    container_name: chore-tracker
+    ports:
+      - "8000:8000"
+    environment:
+      - ADMIN_PASSCODE=${ADMIN_PASSCODE:-parent123}
+      - DATABASE_URL=sqlite+aiosqlite:///./instance/chore.db
+    volumes:
+      - chore-data:/app/instance
+    restart: unless-stopped
+
+volumes:
+  chore-data:

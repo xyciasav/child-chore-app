@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Chore Tracker - Kids{% endblock %}
+{% block header %}🌟 My Chores{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Coin Balance Display -->
+    <div class="coin-balance">
+        <span class="coin-icon">🪙</span>
+        <span class="coin-amount">{{ child.coins }}</span>
+        <span class="coin-label">coins</span>
+    </div>
+
+    <!-- Active Chores Section -->
+    <section class="section">
+        <h2>My Chores</h2>
+        <div class="chore-grid">
+            {% for chore in chores %}
+            <div class="chore-card">
+                <h3>{{ chore.title }}</h3>
+                <p class="chore-description">{{ chore.description }}</p>
+                <div class="chore-reward">{{ chore.coin_value }} 🪙</div>
+                <form action="/kid/chore/submit" method="post" class="chore-form">
+                    <input type="hidden" name="chore_id" value="{{ chore.id }}">
+                    <button type="submit" class="btn btn-primary">I Did This!</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Pending Approvals Section -->
+    {% if pending_chores %}
+    <section class="section">
+        <h2>Waiting for Approval ⏳</h2>
+        <div class="pending-list">
+            {% for submission in pending_chores %}
+            <div class="pending-item">
+                <span>{{ submission.chore.title }}</span>
+                <span class="status-badge status-pending">Pending</span>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Rewards Section -->
+    <section class="section">
+        <h2>Rewards 🎁</h2>
+        <div class="reward-grid">
+            {% for reward in rewards %}
+            <div class="reward-card">
+                <h3>{{ reward.title }}</h3>
+                <p class="reward-description">{{ reward.description }}</p>
+                <div class="reward-cost">{{ reward.coin_cost }} 🪙</div>
+                <form action="/kid/reward/request" method="post" class="reward-form">
+                    <input type="hidden" name="reward_id" value="{{ reward.id }}">
+                    <button type="submit" class="btn btn-secondary" 
+                            {% if child.coins < reward.coin_cost %}disabled{% endif %}>
+                        {% if child.coins < reward.coin_cost %}
+                            Not Enough Coins
+                        {% else %}
+                            I Want This!
+                        {% endif %}
+                    </button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Pending Reward Requests -->
+    {% if pending_rewards %}
+    <section class="section">
+        <h2>Reward Requests ⏳</h2>
+        <div class="pending-list">
+            {% for redemption in pending_rewards %}
+            <div class="pending-item">
+                <span>{{ redemption.reward.title }}</span>
+                <span class="status-badge status-pending">Pending</span>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Show confirmation before submitting a chore
+document.querySelectorAll('.chore-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        const choreTitle = this.closest('.chore-card').querySelector('h3').textContent;
+        if (!confirm('Did you complete: ' + choreTitle + '?')) {
+            e.preventDefault();
+        }
+    });
+});
+
+// Show confirmation before requesting a reward
+document.querySelectorAll('.reward-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        const rewardTitle = this.closest('.reward-card').querySelector('h3').textContent;
+        if (!confirm('Do you want to request: ' + rewardTitle + '?')) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

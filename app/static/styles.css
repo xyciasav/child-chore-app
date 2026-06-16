@@ -1,0 +1,553 @@
+/* ============================================
+   Chore Tracker - Styles
+   ============================================ */
+
+/* --- Reset & Base --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #f5f7fa;
+    color: #333;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- Header --- */
+header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* --- Main Content --- */
+main {
+    flex: 1;
+    padding: 2rem 1rem;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* --- Footer --- */
+footer {
+    background-color: #2d3748;
+    color: #a0aec0;
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.875rem;
+}
+
+/* --- Sections --- */
+.section {
+    margin-bottom: 2rem;
+}
+
+.section h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: #2d3748;
+}
+
+/* --- Coin Balance --- */
+.coin-balance {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.coin-icon {
+    font-size: 2rem;
+}
+
+.coin-amount {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #744210;
+}
+
+.coin-label {
+    font-size: 1.25rem;
+    color: #975a16;
+}
+
+/* --- Chore Grid --- */
+.chore-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.chore-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.chore-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.chore-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: #2d3748;
+}
+
+.chore-description {
+    color: #718096;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.chore-reward {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #d69e2e;
+    margin-bottom: 1rem;
+}
+
+/* --- Reward Grid --- */
+.reward-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.reward-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    border: 2px solid #ed8936;
+}
+
+.reward-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: #2d3748;
+}
+
+.reward-description {
+    color: #718096;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.reward-cost {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #dd6b20;
+    margin-bottom: 1rem;
+}
+
+/* --- Pending Items --- */
+.pending-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.pending-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* --- Status Badges --- */
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-pending {
+    background-color: #fefcbf;
+    color: #975a16;
+}
+
+.status-approved {
+    background-color: #c6f6d5;
+    color: #276749;
+}
+
+.status-denied {
+    background-color: #fed7d7;
+    color: #9b2c2c;
+}
+
+.status-active {
+    background-color: #c6f6d5;
+    color: #276749;
+}
+
+.status-inactive {
+    background-color: #e2e8f0;
+    color: #4a5568;
+}
+
+/* --- Buttons --- */
+.btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+    color: #744210;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(253, 160, 133, 0.4);
+}
+
+.btn-success {
+    background-color: #48bb78;
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #38a169;
+}
+
+.btn-danger {
+    background-color: #f56565;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #e53e3e;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 2px solid #667eea;
+    color: #667eea;
+}
+
+.btn-outline:hover {
+    background-color: #667eea;
+    color: white;
+}
+
+/* --- Forms --- */
+.chore-form,
+.reward-form {
+    margin-top: 1rem;
+}
+
+.chore-form .btn,
+.reward-form .btn {
+    width: 100%;
+}
+
+/* --- Login Page --- */
+.login-box {
+    max-width: 400px;
+    margin: 2rem auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.login-box h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #2d3748;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* --- Form Elements --- */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #4a5568;
+}
+
+.form-group input,
+.form-group textarea {
+    padding: 0.75rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+/* --- Alerts --- */
+.alert {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.alert-error {
+    background-color: #fed7d7;
+    color: #9b2c2c;
+    border: 1px solid #fc8181;
+}
+
+.alert-success {
+    background-color: #c6f6d5;
+    color: #276749;
+    border: 1px solid #68d391;
+}
+
+/* --- Admin Dashboard --- */
+.admin-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    background: white;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.tab-btn {
+    padding: 0.5rem 1rem;
+    border: 2px solid #e2e8f0;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #4a5568;
+    transition: all 0.2s;
+}
+
+.tab-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.tab-btn.active {
+    background-color: #667eea;
+    border-color: #667eea;
+    color: white;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* --- Approval List --- */
+.approval-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.approval-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.approval-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.approval-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* --- Admin Forms --- */
+.admin-form-box {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+}
+
+.admin-form-box h3 {
+    margin-bottom: 1rem;
+    color: #2d3748;
+}
+
+.admin-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+/* --- Manage List --- */
+.manage-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.manage-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.manage-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.manage-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* --- Inline Forms --- */
+.inline-form {
+    display: inline;
+}
+
+/* --- Empty State --- */
+.empty-state {
+    text-align: center;
+    color: #a0aec0;
+    padding: 2rem;
+    font-style: italic;
+}
+
+/* --- Logout Section --- */
+.logout-section {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 1.25rem;
+    }
+
+    .coin-amount {
+        font-size: 2rem;
+    }
+
+    .chore-grid,
+    .reward-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .approval-item {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .approval-actions {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-nav {
+        justify-content: center;
+    }
+}
+
+/* --- Tablet Optimizations --- */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .chore-grid,
+    .reward-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    main {
+        padding: 1.5rem;
+    }
+}
