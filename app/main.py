@@ -30,7 +30,7 @@ app.include_router(api_router)
 
 
 @app.get("/")
-async def homepage(request: Request):
+async def homepage():
     """Redirect to kid dashboard by default."""
     return RedirectResponse(url="/kid")
 
@@ -40,3 +40,4 @@ async def favicon():
     """Return empty response for favicon requests."""
     from fastapi.responses import Response
     return Response(content=None, media_type="image/x-icon")
+
