@@ -10,7 +10,7 @@ from app.models import (
     Child, Chore, ChoreSubmission, Reward, RewardRedemption,
     ChoreStatus, RewardRedemptionStatus
 )
-from app.main import templates
+from app.core import templates
 from app.auth import check_admin_passcode
 
 router = APIRouter()

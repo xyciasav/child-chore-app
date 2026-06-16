@@ -6,7 +6,7 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.models import Child, Chore, ChoreSubmission, Reward, RewardRedemption, ChoreStatus, RewardRedemptionStatus
-from app.main import templates
+from app.core import templates
 
 router = APIRouter()
 
