@@ -1,11 +1,42 @@
-import os
+from pathlib import Path
+
 from fastapi.templating import Jinja2Templates
 
-# Get the directory where this file is located
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
-STATIC_DIR = os.path.join(BASE_DIR, "static")
+BASE_DIR = Path(__file__).resolve().parent
+PROJECT_DIR = BASE_DIR.parent
 
-# Create templates instance with correct path
-templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
+def first_existing_path(*paths: Path) -> Path:
+    """Return the first existing path, or the first candidate for clear errors."""
+    for path in paths:
+        if path.exists():
+            return path
+    return paths[0]
+
+
+TEMPLATES_DIR = first_existing_path(
+    BASE_DIR / "templates",
+    PROJECT_DIR / "templates",
+    Path("/app/app/templates"),
+    Path("/app/templates"),
+)
+TEMPLATES_DIRS = [
+    path
+    for path in (
+        BASE_DIR / "templates",
+        PROJECT_DIR / "templates",
+        Path("/app/app/templates"),
+        Path("/app/templates"),
+    )
+    if path.exists()
+]
+STATIC_DIR = first_existing_path(
+    BASE_DIR / "static",
+    PROJECT_DIR / "static",
+    Path("/app/app/static"),
+    Path("/app/static"),
+)
+
+templates = Jinja2Templates(
+    directory=[str(path) for path in TEMPLATES_DIRS] or str(TEMPLATES_DIR)
+)
