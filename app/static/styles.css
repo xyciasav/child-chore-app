@@ -895,3 +895,45 @@ footer {
         transform: scale(1);
     }
 }
+
+.random-chore-result {
+    margin-top: 1rem;
+    padding: 1.25rem;
+    border-radius: 1rem;
+    text-align: center;
+    display: grid;
+    gap: 0.5rem;
+}
+
+.random-chore-result[hidden] {
+    display: none;
+}
+
+.random-chore-result strong {
+    font-size: 1.5rem;
+}
+
+.random-chore-result .btn {
+    margin-top: 0.5rem;
+}
+
+.is-spinning-result {
+    animation: missionReveal 0.45s ease-in-out;
+}
+
+@keyframes missionReveal {
+    0% {
+        transform: scale(0.96) rotate(-1deg);
+        opacity: 0.4;
+    }
+
+    60% {
+        transform: scale(1.04) rotate(1deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1) rotate(0);
+        opacity: 1;
+    }
+}

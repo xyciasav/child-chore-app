@@ -30,13 +30,16 @@
                 🎲 Pick a Chore for Me
             </button>
 
-            <div id="random-chore-result" class="random-chore-result" hidden>
-                <span class="random-label">Your mission:</span>
-                <strong id="random-chore-title"></strong>
-                <span id="random-chore-room"></span>
-            </div>
-        </div>
-    </section>
+    <div id="random-chore-result" class="random-chore-result" hidden>
+        <span class="random-label">Your mission:</span>
+        <strong id="random-chore-title"></strong>
+        <span id="random-chore-room"></span>
+        <span id="random-chore-coins"></span>
+
+        <button type="button" class="btn btn-secondary" id="random-chore-start">
+            Start This Mission
+        </button>
+    </div>
 
     <!-- Active Chores Section -->
     <section class="section">
@@ -46,7 +49,7 @@
         <h3 class="room-heading">{{ group.room }}</h3>
         <div class="chore-grid">
             {% for chore in group.chores %}
-            <div class="chore-card" data-chore-title="{{ chore.title }}" data-chore-room="{{ group.room }}">
+            <div class="chore-card" data-chore-title="{{ chore.title }}" data-chore-room="{{ group.room }}" data-chore-coins="{{ chore.coin_value }}">
                 <h3>{{ chore.title }}</h3>
                 <p class="chore-description">{{ chore.description }}</p>
                 <div class="chore-reward">{{ chore.coin_value }} 🪙</div>
@@ -317,6 +320,10 @@ const randomChoreButton = document.getElementById('random-chore-btn');
 const randomChoreResult = document.getElementById('random-chore-result');
 const randomChoreTitle = document.getElementById('random-chore-title');
 const randomChoreRoom = document.getElementById('random-chore-room');
+const randomChoreCoins = document.getElementById('random-chore-coins');
+const randomChoreStart = document.getElementById('random-chore-start');
+
+let pickedChoreForm = null;
 
 if (randomChoreButton) {
     randomChoreButton.addEventListener('click', () => {
@@ -329,21 +336,27 @@ if (randomChoreButton) {
         const pickedCard = choreCards[Math.floor(Math.random() * choreCards.length)];
         const title = pickedCard.dataset.choreTitle || pickedCard.querySelector('h3').textContent.trim();
         const room = pickedCard.dataset.choreRoom || '';
+        const coins = pickedCard.dataset.choreCoins || '';
+        pickedChoreForm = pickedCard.querySelector('.chore-form');
 
         randomChoreTitle.textContent = title;
         randomChoreRoom.textContent = room ? `📍 ${room}` : '';
+        randomChoreCoins.textContent = coins ? `${coins} 🪙` : '';
         randomChoreResult.hidden = false;
 
-        pickedCard.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-        });
+        randomChoreResult.classList.remove('is-spinning-result');
+        void randomChoreResult.offsetWidth;
+        randomChoreResult.classList.add('is-spinning-result');
+    });
+}
 
-        pickedCard.classList.add('is-picked-chore');
+if (randomChoreStart) {
+    randomChoreStart.addEventListener('click', () => {
+        if (!pickedChoreForm) {
+            return;
+        }
 
-        setTimeout(() => {
-            pickedCard.classList.remove('is-picked-chore');
-        }, 1800);
+        pickedChoreForm.requestSubmit();
     });
 }
 </script>
