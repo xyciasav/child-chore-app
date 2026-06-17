@@ -1,8 +1,24 @@
 import os
+from pathlib import Path
+
+from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 # Database URL - using SQLite with aiosqlite for async support
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./instance/chore.db")
+
+
+def ensure_sqlite_directory(database_url: str) -> None:
+    """Create the SQLite parent directory when using a file-backed database."""
+    url = make_url(database_url)
+    if not url.drivername.startswith("sqlite") or not url.database:
+        return
+    if url.database == ":memory:":
+        return
+    Path(url.database).expanduser().parent.mkdir(parents=True, exist_ok=True)
+
+
+ensure_sqlite_directory(DATABASE_URL)
 
 engine = create_async_engine(
     DATABASE_URL,

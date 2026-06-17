@@ -1,11 +1,9 @@
-import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from app.database import engine, init_db
-from app.models import Base
-from app.core import STATIC_DIR
+from app.core import STATIC_DIR, validate_project_layout
+from app.database import init_db
 from app.routes_kid import router as kid_router
 from app.routes_admin import router as admin_router
 from app.routes_api import router as api_router
@@ -13,14 +11,14 @@ from app.routes_api import router as api_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize database on startup
+    validate_project_layout()
     await init_db()
     yield
 
 
 app = FastAPI(title="Chore Tracker", lifespan=lifespan)
 
-# Mount static files
+validate_project_layout()
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 # Include routers

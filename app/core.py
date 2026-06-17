@@ -1,42 +1,36 @@
+from fastapi.templating import Jinja2Templates
 from pathlib import Path
 
-from fastapi.templating import Jinja2Templates
-
 BASE_DIR = Path(__file__).resolve().parent
-PROJECT_DIR = BASE_DIR.parent
+TEMPLATES_DIR = BASE_DIR / "templates"
+STATIC_DIR = BASE_DIR / "static"
 
-
-def first_existing_path(*paths: Path) -> Path:
-    """Return the first existing path, or the first candidate for clear errors."""
-    for path in paths:
-        if path.exists():
-            return path
-    return paths[0]
-
-
-TEMPLATES_DIR = first_existing_path(
-    BASE_DIR / "templates",
-    PROJECT_DIR / "templates",
-    Path("/app/app/templates"),
-    Path("/app/templates"),
+REQUIRED_TEMPLATES = (
+    "base.html",
+    "kid_dashboard.html",
+    "admin_login.html",
+    "admin_dashboard.html",
 )
-TEMPLATES_DIRS = [
-    path
-    for path in (
-        BASE_DIR / "templates",
-        PROJECT_DIR / "templates",
-        Path("/app/app/templates"),
-        Path("/app/templates"),
-    )
-    if path.exists()
-]
-STATIC_DIR = first_existing_path(
-    BASE_DIR / "static",
-    PROJECT_DIR / "static",
-    Path("/app/app/static"),
-    Path("/app/static"),
-)
+REQUIRED_STATIC_FILES = ("styles.css",)
 
-templates = Jinja2Templates(
-    directory=[str(path) for path in TEMPLATES_DIRS] or str(TEMPLATES_DIR)
-)
+
+def validate_project_layout() -> None:
+    """Fail fast when the Docker image is missing web assets."""
+    missing = []
+
+    for template_name in REQUIRED_TEMPLATES:
+        template_path = TEMPLATES_DIR / template_name
+        if not template_path.is_file():
+            missing.append(str(template_path))
+
+    for static_name in REQUIRED_STATIC_FILES:
+        static_path = STATIC_DIR / static_name
+        if not static_path.is_file():
+            missing.append(str(static_path))
+
+    if missing:
+        missing_files = ", ".join(missing)
+        raise RuntimeError(f"Missing required app assets: {missing_files}")
+
+
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
