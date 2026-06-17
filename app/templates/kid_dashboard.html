@@ -20,6 +20,24 @@
     </nav>
 
     <div id="kid-chores" class="kid-tab-content active">
+    <!-- Random Chore Spinner -->
+    <section class="section">
+        <div class="spinner-box">
+            <h2>Need a mission?</h2>
+            <p>Tap the button and let the chore wheel pick for you!</p>
+
+            <button type="button" class="btn btn-primary" id="random-chore-btn">
+                🎲 Pick a Chore for Me
+            </button>
+
+            <div id="random-chore-result" class="random-chore-result" hidden>
+                <span class="random-label">Your mission:</span>
+                <strong id="random-chore-title"></strong>
+                <span id="random-chore-room"></span>
+            </div>
+        </div>
+    </section>
+
     <!-- Active Chores Section -->
     <section class="section">
         <h2>My Chores</h2>
@@ -28,7 +46,7 @@
         <h3 class="room-heading">{{ group.room }}</h3>
         <div class="chore-grid">
             {% for chore in group.chores %}
-            <div class="chore-card">
+            <div class="chore-card" data-chore-title="{{ chore.title }}" data-chore-room="{{ group.room }}">
                 <h3>{{ chore.title }}</h3>
                 <p class="chore-description">{{ chore.description }}</p>
                 <div class="chore-reward">{{ chore.coin_value }} 🪙</div>
@@ -294,5 +312,39 @@ document.addEventListener('keydown', event => {
         closeConfirmModal();
     }
 });
+
+const randomChoreButton = document.getElementById('random-chore-btn');
+const randomChoreResult = document.getElementById('random-chore-result');
+const randomChoreTitle = document.getElementById('random-chore-title');
+const randomChoreRoom = document.getElementById('random-chore-room');
+
+if (randomChoreButton) {
+    randomChoreButton.addEventListener('click', () => {
+        const choreCards = Array.from(document.querySelectorAll('.chore-card'));
+
+        if (!choreCards.length) {
+            return;
+        }
+
+        const pickedCard = choreCards[Math.floor(Math.random() * choreCards.length)];
+        const title = pickedCard.dataset.choreTitle || pickedCard.querySelector('h3').textContent.trim();
+        const room = pickedCard.dataset.choreRoom || '';
+
+        randomChoreTitle.textContent = title;
+        randomChoreRoom.textContent = room ? `📍 ${room}` : '';
+        randomChoreResult.hidden = false;
+
+        pickedCard.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        });
+
+        pickedCard.classList.add('is-picked-chore');
+
+        setTimeout(() => {
+            pickedCard.classList.remove('is-picked-chore');
+        }, 1800);
+    });
+}
 </script>
 {% endblock %}
