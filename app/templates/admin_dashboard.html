@@ -120,8 +120,8 @@
                     <form action="/admin/chore/delete" method="post" class="inline-form">
                         <input type="hidden" name="chore_id" value="{{ chore.id }}">
                         <button type="submit" class="btn btn-danger" 
-                                onclick="return confirm('Delete this chore?')">
-                            Delete
+                                onclick="return confirm('Archive this chore? It will be hidden from the kid dashboard but history will stay.')">
+                            Archive
                         </button>
                     </form>
                 </div>
@@ -238,8 +238,8 @@
                     <form action="/admin/reward/delete" method="post" class="inline-form">
                         <input type="hidden" name="reward_id" value="{{ reward.id }}">
                         <button type="submit" class="btn btn-danger" 
-                                onclick="return confirm('Delete this reward?')">
-                            Delete
+                                onclick="return confirm('Archive this reward? It will be hidden from the kid dashboard but history will stay.')">
+                            Archive
                         </button>
                     </form>
                 </div>

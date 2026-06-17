@@ -271,7 +271,7 @@ async def delete_chore(
     chore_id: int = Form(...),
     db: AsyncSession = Depends(get_db)
 ):
-    """Delete a chore."""
+    """Archive a chore so existing submission history remains intact."""
     redirect = check_admin_cookie(request)
     if redirect:
         return redirect
@@ -279,7 +279,7 @@ async def delete_chore(
     chore_result = await db.execute(select(Chore).where(Chore.id == chore_id))
     chore = chore_result.scalar_one_or_none()
     if chore:
-        await db.delete(chore)
+        chore.active = False
         await db.commit()
     return RedirectResponse(url=ADMIN_TABS["manage_chores"], status_code=303)
 
@@ -342,7 +342,7 @@ async def delete_reward(
     reward_id: int = Form(...),
     db: AsyncSession = Depends(get_db)
 ):
-    """Delete a reward."""
+    """Archive a reward so existing redemption history remains intact."""
     redirect = check_admin_cookie(request)
     if redirect:
         return redirect
@@ -350,7 +350,7 @@ async def delete_reward(
     reward_result = await db.execute(select(Reward).where(Reward.id == reward_id))
     reward = reward_result.scalar_one_or_none()
     if reward:
-        await db.delete(reward)
+        reward.active = False
         await db.commit()
     return RedirectResponse(url=ADMIN_TABS["manage_rewards"], status_code=303)
 
