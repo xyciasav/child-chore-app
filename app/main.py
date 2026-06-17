@@ -8,13 +8,14 @@ from app.routes_kid import router as kid_router
 from app.routes_admin import router as admin_router
 from app.routes_api import router as api_router
 
-APP_VERSION = "2026-06-17-chore-sound"
+APP_VERSION = "2026-06-17-kid-tabs"
 APP_FEATURES = (
     "admin_chore_editing",
     "kid_in_page_confirmations",
     "chore_room_grouping",
     "reward_claim_sound",
     "chore_submit_sound",
+    "kid_chore_reward_tabs",
     "admin_metrics",
 )
 

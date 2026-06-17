@@ -12,6 +12,12 @@
         <span class="coin-label">coins</span>
     </div>
 
+    <nav class="kid-tabs" aria-label="Kid dashboard tabs">
+        <button type="button" class="kid-tab-btn active" data-kid-tab="kid-chores">Chores</button>
+        <button type="button" class="kid-tab-btn" data-kid-tab="kid-rewards">Rewards</button>
+    </nav>
+
+    <div id="kid-chores" class="kid-tab-content active">
     <!-- Active Chores Section -->
     <section class="section">
         <h2>My Chores</h2>
@@ -52,6 +58,9 @@
     </section>
     {% endif %}
 
+    </div>
+
+    <div id="kid-rewards" class="kid-tab-content">
     <!-- Rewards Section -->
     <section class="section">
         <h2>Rewards 🎁</h2>
@@ -91,6 +100,7 @@
         </div>
     </section>
     {% endif %}
+    </div>
 </div>
 
 <div class="confirm-modal" id="confirm-modal" aria-hidden="true">
@@ -122,6 +132,35 @@ const confirmMessage = document.getElementById('confirm-modal-message');
 const confirmSubmit = document.getElementById('confirm-modal-submit');
 let pendingForm = null;
 let pendingActionType = null;
+
+function activateKidTab(tabId, updateUrl = true) {
+    const tabButton = document.querySelector(`.kid-tab-btn[data-kid-tab="${tabId}"]`);
+    const tabContent = document.getElementById(tabId);
+    if (!tabButton || !tabContent) {
+        return;
+    }
+
+    document.querySelectorAll('.kid-tab-btn').forEach(button => button.classList.remove('active'));
+    document.querySelectorAll('.kid-tab-content').forEach(content => content.classList.remove('active'));
+
+    tabButton.classList.add('active');
+    tabContent.classList.add('active');
+
+    if (updateUrl) {
+        const url = new URL(window.location);
+        url.searchParams.set('tab', tabId.replace('kid-', ''));
+        window.history.replaceState({}, '', url);
+    }
+}
+
+document.querySelectorAll('.kid-tab-btn').forEach(button => {
+    button.addEventListener('click', () => activateKidTab(button.dataset.kidTab));
+});
+
+const initialKidTab = new URLSearchParams(window.location.search).get('tab');
+if (initialKidTab === 'rewards') {
+    activateKidTab('kid-rewards', false);
+}
 
 function openConfirmModal({ title, message, buttonText, form, actionType }) {
     pendingForm = form;
