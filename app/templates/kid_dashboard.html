@@ -103,6 +103,7 @@
             <span></span>
             <span></span>
         </div>
+        <div class="chore-pulse" aria-hidden="true"></div>
         <h2 id="confirm-modal-title">Confirm</h2>
         <p id="confirm-modal-message"></p>
         <div class="confirm-modal__actions">
@@ -131,13 +132,14 @@ function openConfirmModal({ title, message, buttonText, form, actionType }) {
     confirmSubmit.disabled = false;
     confirmModal.classList.add('is-open');
     confirmModal.classList.toggle('is-reward', actionType === 'reward');
+    confirmModal.classList.toggle('is-chore', actionType === 'chore');
     confirmModal.setAttribute('aria-hidden', 'false');
     confirmSubmit.focus();
 }
 
 function closeConfirmModal() {
     confirmModal.classList.remove('is-open');
-    confirmModal.classList.remove('is-reward', 'is-celebrating');
+    confirmModal.classList.remove('is-reward', 'is-chore', 'is-celebrating');
     confirmModal.setAttribute('aria-hidden', 'true');
     confirmSubmit.disabled = false;
     pendingForm = null;
@@ -166,6 +168,31 @@ function playRewardSound() {
         gain.connect(audioContext.destination);
         oscillator.start(startTime + index * 0.08);
         oscillator.stop(startTime + index * 0.08 + 0.2);
+    });
+}
+
+function playChoreSound() {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) {
+        return;
+    }
+
+    const audioContext = new AudioContext();
+    const startTime = audioContext.currentTime;
+    const notes = [392, 523.25, 659.25];
+
+    notes.forEach((frequency, index) => {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.type = 'square';
+        oscillator.frequency.value = frequency;
+        gain.gain.setValueAtTime(0.0001, startTime + index * 0.07);
+        gain.gain.exponentialRampToValueAtTime(0.12, startTime + index * 0.07 + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + index * 0.07 + 0.13);
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start(startTime + index * 0.07);
+        oscillator.stop(startTime + index * 0.07 + 0.15);
     });
 }
 
@@ -209,7 +236,11 @@ confirmSubmit.addEventListener('click', () => {
         playRewardSound();
         setTimeout(() => pendingForm.submit(), 750);
     } else {
-        pendingForm.submit();
+        confirmSubmit.disabled = true;
+        confirmSubmit.textContent = 'Sending for Approval...';
+        confirmModal.classList.add('is-celebrating');
+        playChoreSound();
+        setTimeout(() => pendingForm.submit(), 550);
     }
 });
 

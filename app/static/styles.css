@@ -365,6 +365,20 @@ footer {
     display: block;
 }
 
+.chore-pulse {
+    display: none;
+    position: absolute;
+    inset: 1rem;
+    border: 3px solid rgba(72, 187, 120, 0.45);
+    border-radius: 8px;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.confirm-modal.is-chore .chore-pulse {
+    display: block;
+}
+
 .reward-burst span {
     position: absolute;
     bottom: 1rem;
@@ -415,6 +429,10 @@ footer {
     animation: reward-burst 700ms ease-out forwards;
 }
 
+.confirm-modal.is-chore.is-celebrating .chore-pulse {
+    animation: chore-pulse 520ms ease-out forwards;
+}
+
 @keyframes reward-burst {
     0% {
         opacity: 0;
@@ -426,6 +444,20 @@ footer {
     100% {
         opacity: 0;
         transform: translate(calc(-50% + var(--burst-x)), var(--burst-y)) scale(1) rotate(var(--burst-rotate));
+    }
+}
+
+@keyframes chore-pulse {
+    0% {
+        opacity: 0;
+        transform: scale(0.86);
+    }
+    25% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.08);
     }
 }
 
