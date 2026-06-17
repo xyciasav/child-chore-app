@@ -8,6 +8,13 @@ from app.routes_kid import router as kid_router
 from app.routes_admin import router as admin_router
 from app.routes_api import router as api_router
 
+APP_VERSION = "2026-06-17-room-groups"
+APP_FEATURES = (
+    "admin_chore_editing",
+    "kid_in_page_confirmations",
+    "chore_room_grouping",
+)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -39,4 +46,16 @@ async def favicon():
     """Return empty response for favicon requests."""
     from fastapi.responses import Response
     return Response(content=None, media_type="image/x-icon")
+
+
+@app.get("/version")
+async def version():
+    """Show the running app version for deployment troubleshooting."""
+    return {
+        "app": "chore-tracker",
+        "version": APP_VERSION,
+        "features": APP_FEATURES,
+        "source": __file__,
+        "templates": str(TEMPLATES_DIR),
+    }
 
