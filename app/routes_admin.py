@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Request, Form, Depends
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, Request, Form, Depends, UploadFile, File
+from fastapi.responses import RedirectResponse, JSONResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -12,7 +12,7 @@ from app.models import (
 )
 from app.core import templates
 from app.auth import check_admin_passcode
-
+import json
 router = APIRouter()
 
 ADMIN_TABS = {
@@ -411,6 +411,154 @@ async def update_child_name(
     await db.commit()
     return RedirectResponse(url=ADMIN_TABS["children"], status_code=303)
 
+@router.get("/admin/export")
+async def export_admin_data(
+    request: Request,
+    db: AsyncSession = Depends(get_db)
+):
+    """Export chores and rewards as JSON."""
+    redirect = check_admin_cookie(request)
+    if redirect:
+        return redirect
+
+    chores_result = await db.execute(select(Chore).order_by(Chore.room, Chore.title))
+    chores = chores_result.scalars().all()
+
+    rewards_result = await db.execute(select(Reward).order_by(Reward.title))
+    rewards = rewards_result.scalars().all()
+
+    data = {
+        "version": 1,
+        "exported_at": datetime.utcnow().isoformat(),
+        "chores": [
+            {
+                "title": chore.title,
+                "room": chore.room or "General",
+                "description": chore.description or "",
+                "coin_value": chore.coin_value,
+                "active": chore.active,
+            }
+            for chore in chores
+        ],
+        "rewards": [
+            {
+                "title": reward.title,
+                "description": reward.description or "",
+                "coin_cost": reward.coin_cost,
+                "active": reward.active,
+            }
+            for reward in rewards
+        ],
+    }
+
+    return JSONResponse(
+        content=data,
+        headers={
+            "Content-Disposition": 'attachment; filename="chore-tracker-backup.json"'
+        }
+    )
+
+
+@router.post("/admin/import")
+async def import_admin_data(
+    request: Request,
+    backup_file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db)
+):
+    """Import chores and rewards from exported JSON."""
+    redirect = check_admin_cookie(request)
+    if redirect:
+        return redirect
+
+    try:
+        raw = await backup_file.read()
+        data = json.loads(raw.decode("utf-8"))
+    except Exception:
+        return RedirectResponse(url="/admin?tab=children", status_code=303)
+
+    chores_data = data.get("chores", [])
+    rewards_data = data.get("rewards", [])
+
+    existing_chores_result = await db.execute(select(Chore))
+    existing_chores = existing_chores_result.scalars().all()
+    chores_by_key = {
+        ((chore.title or "").strip().lower(), (chore.room or "General").strip().lower()): chore
+        for chore in existing_chores
+    }
+
+    for item in chores_data:
+        title = str(item.get("title", "")).strip()
+        room = str(item.get("room", "General")).strip() or "General"
+
+        if not title:
+            continue
+
+        key = (title.lower(), room.lower())
+        chore = chores_by_key.get(key)
+
+        if chore:
+            chore.description = str(item.get("description", ""))
+            chore.coin_value = float(item.get("coin_value", 1.0))
+            chore.active = bool(item.get("active", True))
+        else:
+            db.add(Chore(
+                title=title,
+                room=room,
+                description=str(item.get("description", "")),
+                coin_value=float(item.get("coin_value", 1.0)),
+                active=bool(item.get("active", True)),
+            ))
+
+    existing_rewards_result = await db.execute(select(Reward))
+    existing_rewards = existing_rewards_result.scalars().all()
+    rewards_by_key = {
+        (reward.title or "").strip().lower(): reward
+        for reward in existing_rewards
+    }
+
+    for item in rewards_data:
+        title = str(item.get("title", "")).strip()
+
+        if not title:
+            continue
+
+        key = title.lower()
+        reward = rewards_by_key.get(key)
+
+        if reward:
+            reward.description = str(item.get("description", ""))
+            reward.coin_cost = float(item.get("coin_cost", 1.0))
+            reward.active = bool(item.get("active", True))
+        else:
+            db.add(Reward(
+                title=title,
+                description=str(item.get("description", "")),
+                coin_cost=float(item.get("coin_cost", 1.0)),
+                active=bool(item.get("active", True)),
+            ))
+
+    await db.commit()
+    return RedirectResponse(url=ADMIN_TABS["children"], status_code=303)
+
+
+@router.post("/admin/coins/reset")
+async def reset_all_coins(
+    request: Request,
+    db: AsyncSession = Depends(get_db)
+):
+    """Reset all child coin balances to zero."""
+    redirect = check_admin_cookie(request)
+    if redirect:
+        return redirect
+
+    children_result = await db.execute(select(Child))
+    children = children_result.scalars().all()
+
+    for child in children:
+        child.coins = 0.0
+
+    await db.commit()
+    return RedirectResponse(url=ADMIN_TABS["children"], status_code=303)
 
 @router.post("/admin/logout")
 async def admin_logout(request: Request):

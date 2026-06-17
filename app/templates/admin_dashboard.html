@@ -310,6 +310,34 @@
             {% endfor %}
         </div>
     </div>
+    <div class="admin-form-box">
+        <h3>Admin Tools</h3>
+
+        <div class="form-row">
+            <a href="/admin/export" class="btn btn-primary">
+                Export Chores & Rewards
+            </a>
+        </div>
+
+        <form action="/admin/import" method="post" enctype="multipart/form-data" class="admin-form">
+            <div class="form-group">
+                <label for="backup-file">Import Chores & Rewards JSON:</label>
+                <input type="file" id="backup-file" name="backup_file" accept="application/json,.json" required>
+            </div>
+
+            <button type="submit" class="btn btn-outline"
+                    onclick="return confirm('Import this backup? Existing matching chores/rewards will be updated, and missing ones will be added.')">
+                Import Backup
+            </button>
+        </form>
+
+        <form action="/admin/coins/reset" method="post" class="admin-form">
+            <button type="submit" class="btn btn-danger"
+                    onclick="return confirm('Reset all child coin balances to 0? This cannot be undone.')">
+                Reset All Coins
+            </button>
+        </form>
+    </div>
 
     <!-- Logout -->
     <div class="logout-section">
