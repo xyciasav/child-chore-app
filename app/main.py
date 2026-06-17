@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from app.core import STATIC_DIR, validate_project_layout
+from app.core import STATIC_DIR, TEMPLATES_DIR, validate_project_layout
 from app.database import init_db
 from app.routes_kid import router as kid_router
 from app.routes_admin import router as admin_router
@@ -19,6 +19,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Chore Tracker", lifespan=lifespan)
 
 validate_project_layout()
+print(f"Loaded Chore Tracker app from {__file__}; templates={TEMPLATES_DIR}", flush=True)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 # Include routers

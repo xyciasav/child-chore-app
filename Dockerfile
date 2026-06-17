@@ -13,7 +13,9 @@ RUN test -f /app/app/templates/base.html \
     && test -f /app/app/templates/kid_dashboard.html \
     && test -f /app/app/templates/admin_login.html \
     && test -f /app/app/templates/admin_dashboard.html \
-    && test -f /app/app/static/styles.css
+    && test -f /app/app/static/styles.css \
+    && test -f /app/app/main.py \
+    && python -c "import app.main; assert hasattr(app.main, 'app')"
 
 # Create instance directory for database
 RUN mkdir -p /app/instance
