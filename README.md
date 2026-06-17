@@ -23,8 +23,6 @@ The compose file maps host port `8765` to container port `8000`:
 
 The default admin passcode is `parent123`. Set `ADMIN_PASSCODE` in your environment or compose stack to change it.
 
-The Docker image is tagged with the app feature version in `docker-compose.yml`. If Portainer keeps showing old code after redeploying, remove the old local image from Portainer's Images page and rebuild the stack.
-
 ## Portainer Deployment
 
 Use the repository stack with this compose file. After pulling a new commit, redeploy with rebuild enabled so Portainer does not reuse an old image.
