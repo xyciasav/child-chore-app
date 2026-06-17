@@ -8,6 +8,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy app directory contents to /app/app
 COPY app/ ./app/
 
+# Verify the image contains the web assets before it can be deployed.
+RUN test -f /app/app/templates/base.html \
+    && test -f /app/app/templates/kid_dashboard.html \
+    && test -f /app/app/templates/admin_login.html \
+    && test -f /app/app/templates/admin_dashboard.html \
+    && test -f /app/app/static/styles.css
+
 # Create instance directory for database
 RUN mkdir -p /app/instance
 
