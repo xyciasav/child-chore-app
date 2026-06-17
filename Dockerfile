@@ -1,7 +1,7 @@
 FROM python:3.12-slim
 
 LABEL org.opencontainers.image.title="Chore Tracker"
-LABEL org.opencontainers.image.version="2026-06-17-room-groups"
+LABEL org.opencontainers.image.version="2026-06-17-gamified-metrics"
 
 WORKDIR /app
 

@@ -96,6 +96,24 @@ async def admin_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
     children_result = await db.execute(select(Child))
     children = children_result.scalars().all()
 
+    chore_history_result = await db.execute(select(ChoreSubmission))
+    chore_history = chore_history_result.scalars().all()
+
+    reward_history_result = await db.execute(select(RewardRedemption))
+    reward_history = reward_history_result.scalars().all()
+
+    metrics = {
+        "total_coins": sum(child.coins for child in children),
+        "active_chores": sum(1 for chore in chores if chore.active),
+        "inactive_chores": sum(1 for chore in chores if not chore.active),
+        "active_rewards": sum(1 for reward in rewards if reward.active),
+        "pending_chores": len(pending_chores),
+        "pending_rewards": len(pending_rewards),
+        "approved_chores": sum(1 for submission in chore_history if submission.status == ChoreStatus.APPROVED),
+        "denied_chores": sum(1 for submission in chore_history if submission.status == ChoreStatus.DENIED),
+        "approved_rewards": sum(1 for redemption in reward_history if redemption.status == RewardRedemptionStatus.APPROVED),
+    }
+
     return templates.TemplateResponse("admin_dashboard.html", {
         "request": request,
         "pending_chores": pending_chores,
@@ -103,6 +121,7 @@ async def admin_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         "rewards": rewards,
         "pending_rewards": pending_rewards,
         "children": children,
+        "metrics": metrics,
     })
 
 

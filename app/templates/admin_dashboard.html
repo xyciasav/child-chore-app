@@ -5,6 +5,33 @@
 
 {% block content %}
 <div class="container">
+    <section class="metrics-grid" aria-label="Chore tracker metrics">
+        <div class="metric-card">
+            <span class="metric-label">Current Coins</span>
+            <strong>{{ metrics.total_coins }}</strong>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Pending Chores</span>
+            <strong>{{ metrics.pending_chores }}</strong>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Pending Rewards</span>
+            <strong>{{ metrics.pending_rewards }}</strong>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Active Chores</span>
+            <strong>{{ metrics.active_chores }}</strong>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Approved Chores</span>
+            <strong>{{ metrics.approved_chores }}</strong>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Rewards Claimed</span>
+            <strong>{{ metrics.approved_rewards }}</strong>
+        </div>
+    </section>
+
     <!-- Navigation Tabs -->
     <nav class="admin-nav">
         <button class="tab-btn active" data-tab="pending-chores">Pending Chores</button>

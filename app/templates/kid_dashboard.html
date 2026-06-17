@@ -96,6 +96,13 @@
 <div class="confirm-modal" id="confirm-modal" aria-hidden="true">
     <div class="confirm-modal__backdrop" data-confirm-cancel></div>
     <div class="confirm-modal__panel" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+        <div class="reward-burst" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
         <h2 id="confirm-modal-title">Confirm</h2>
         <p id="confirm-modal-message"></p>
         <div class="confirm-modal__actions">
@@ -113,21 +120,53 @@ const confirmTitle = document.getElementById('confirm-modal-title');
 const confirmMessage = document.getElementById('confirm-modal-message');
 const confirmSubmit = document.getElementById('confirm-modal-submit');
 let pendingForm = null;
+let pendingActionType = null;
 
-function openConfirmModal({ title, message, buttonText, form }) {
+function openConfirmModal({ title, message, buttonText, form, actionType }) {
     pendingForm = form;
+    pendingActionType = actionType;
     confirmTitle.textContent = title;
     confirmMessage.textContent = message;
     confirmSubmit.textContent = buttonText;
+    confirmSubmit.disabled = false;
     confirmModal.classList.add('is-open');
+    confirmModal.classList.toggle('is-reward', actionType === 'reward');
     confirmModal.setAttribute('aria-hidden', 'false');
     confirmSubmit.focus();
 }
 
 function closeConfirmModal() {
     confirmModal.classList.remove('is-open');
+    confirmModal.classList.remove('is-reward', 'is-celebrating');
     confirmModal.setAttribute('aria-hidden', 'true');
+    confirmSubmit.disabled = false;
     pendingForm = null;
+    pendingActionType = null;
+}
+
+function playRewardSound() {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) {
+        return;
+    }
+
+    const audioContext = new AudioContext();
+    const notes = [523.25, 659.25, 783.99, 1046.5];
+    const startTime = audioContext.currentTime;
+
+    notes.forEach((frequency, index) => {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.type = 'triangle';
+        oscillator.frequency.value = frequency;
+        gain.gain.setValueAtTime(0.0001, startTime + index * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.18, startTime + index * 0.08 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + index * 0.08 + 0.18);
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start(startTime + index * 0.08);
+        oscillator.stop(startTime + index * 0.08 + 0.2);
+    });
 }
 
 document.querySelectorAll('.chore-form').forEach(form => {
@@ -139,6 +178,7 @@ document.querySelectorAll('.chore-form').forEach(form => {
             message: choreTitle,
             buttonText: 'Yes, I Did This',
             form,
+            actionType: 'chore',
         });
     });
 });
@@ -152,12 +192,23 @@ document.querySelectorAll('.reward-form').forEach(form => {
             message: rewardTitle,
             buttonText: 'Yes, Request It',
             form,
+            actionType: 'reward',
         });
     });
 });
 
 confirmSubmit.addEventListener('click', () => {
-    if (pendingForm) {
+    if (!pendingForm) {
+        return;
+    }
+
+    if (pendingActionType === 'reward') {
+        confirmSubmit.disabled = true;
+        confirmSubmit.textContent = 'Sending Request...';
+        confirmModal.classList.add('is-celebrating');
+        playRewardSound();
+        setTimeout(() => pendingForm.submit(), 750);
+    } else {
         pendingForm.submit();
     }
 });
