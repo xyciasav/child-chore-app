@@ -3,6 +3,7 @@ version: '3.8'
 services:
   chore-tracker:
     build: .
+    image: chore-tracker:2026-06-17-room-groups
     container_name: chore-tracker
     ports:
       - "8765:8000"
