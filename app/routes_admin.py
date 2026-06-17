@@ -15,6 +15,13 @@ from app.auth import check_admin_passcode
 
 router = APIRouter()
 
+ADMIN_TABS = {
+    "pending_chores": "/admin?tab=pending-chores",
+    "manage_chores": "/admin?tab=manage-chores",
+    "pending_rewards": "/admin?tab=pending-rewards",
+    "manage_rewards": "/admin?tab=manage-rewards",
+}
+
 
 @router.get("/admin/login")
 async def admin_login_page(request: Request):
@@ -120,14 +127,14 @@ async def approve_chore(
     )
     submission = submission_result.scalar_one_or_none()
     if not submission:
-        return RedirectResponse(url="/admin", status_code=303)
+        return RedirectResponse(url=ADMIN_TABS["pending_chores"], status_code=303)
 
     submission.status = ChoreStatus.APPROVED
     submission.reviewed_at = datetime.utcnow()
     submission.child.coins += submission.chore.coin_value
 
     await db.commit()
-    return RedirectResponse(url="/admin", status_code=303)
+    return RedirectResponse(url=ADMIN_TABS["pending_chores"], status_code=303)
 
 
 @router.post("/admin/chore/deny")
@@ -147,13 +154,13 @@ async def deny_chore(
     )
     submission = submission_result.scalar_one_or_none()
     if not submission:
-        return RedirectResponse(url="/admin", status_code=303)
+        return RedirectResponse(url=ADMIN_TABS["pending_chores"], status_code=303)
 
     submission.status = ChoreStatus.DENIED
     submission.reviewed_at = datetime.utcnow()
 
     await db.commit()
-    return RedirectResponse(url="/admin", status_code=303)
+    return RedirectResponse(url=ADMIN_TABS["pending_chores"], status_code=303)
 
 
 @router.post("/admin/reward/approve")
@@ -177,14 +184,14 @@ async def approve_reward(
     )
     redemption = redemption_result.scalar_one_or_none()
     if not redemption:
-        return RedirectResponse(url="/admin", status_code=303)
+        return RedirectResponse(url=ADMIN_TABS["pending_rewards"], status_code=303)
 
     redemption.status = RewardRedemptionStatus.APPROVED
     redemption.reviewed_at = datetime.utcnow()
     redemption.child.coins -= redemption.reward.coin_cost
 
     await db.commit()
-    return RedirectResponse(url="/admin", status_code=303)
+    return RedirectResponse(url=ADMIN_TABS["pending_rewards"], status_code=303)
 
 
 @router.post("/admin/reward/deny")
@@ -204,13 +211,13 @@ async def deny_reward(
     )
     redemption = redemption_result.scalar_one_or_none()
     if not redemption:
-        return RedirectResponse(url="/admin", status_code=303)
+        return RedirectResponse(url=ADMIN_TABS["pending_rewards"], status_code=303)
 
     redemption.status = RewardRedemptionStatus.DENIED
     redemption.reviewed_at = datetime.utcnow()
 
     await db.commit()
-    return RedirectResponse(url="/admin", status_code=303)
+    return RedirectResponse(url=ADMIN_TABS["pending_rewards"], status_code=303)
 
 
 @router.post("/admin/chore/add")
@@ -236,7 +243,7 @@ async def add_chore(
     )
     db.add(chore)
     await db.commit()
-    return RedirectResponse(url="/admin", status_code=303)
+    return RedirectResponse(url=ADMIN_TABS["manage_chores"], status_code=303)
 
 
 @router.post("/admin/chore/delete")
@@ -255,7 +262,7 @@ async def delete_chore(
     if chore:
         await db.delete(chore)
         await db.commit()
-    return RedirectResponse(url="/admin", status_code=303)
+    return RedirectResponse(url=ADMIN_TABS["manage_chores"], status_code=303)
 
 
 @router.post("/admin/chore/edit")
@@ -283,7 +290,7 @@ async def edit_chore(
         chore.coin_value = coin_value
         chore.active = active
         await db.commit()
-    return RedirectResponse(url="/admin", status_code=303)
+    return RedirectResponse(url=ADMIN_TABS["manage_chores"], status_code=303)
 
 
 @router.post("/admin/reward/add")
@@ -307,7 +314,7 @@ async def add_reward(
     )
     db.add(reward)
     await db.commit()
-    return RedirectResponse(url="/admin", status_code=303)
+    return RedirectResponse(url=ADMIN_TABS["manage_rewards"], status_code=303)
 
 
 @router.post("/admin/reward/delete")
@@ -326,7 +333,7 @@ async def delete_reward(
     if reward:
         await db.delete(reward)
         await db.commit()
-    return RedirectResponse(url="/admin", status_code=303)
+    return RedirectResponse(url=ADMIN_TABS["manage_rewards"], status_code=303)
 
 
 @router.post("/admin/logout")
