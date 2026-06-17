@@ -85,28 +85,84 @@
     </section>
     {% endif %}
 </div>
+
+<div class="confirm-modal" id="confirm-modal" aria-hidden="true">
+    <div class="confirm-modal__backdrop" data-confirm-cancel></div>
+    <div class="confirm-modal__panel" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+        <h2 id="confirm-modal-title">Confirm</h2>
+        <p id="confirm-modal-message"></p>
+        <div class="confirm-modal__actions">
+            <button type="button" class="btn btn-outline" data-confirm-cancel>Cancel</button>
+            <button type="button" class="btn btn-primary" id="confirm-modal-submit">Yes, I Did This</button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-// Show confirmation before submitting a chore
+const confirmModal = document.getElementById('confirm-modal');
+const confirmTitle = document.getElementById('confirm-modal-title');
+const confirmMessage = document.getElementById('confirm-modal-message');
+const confirmSubmit = document.getElementById('confirm-modal-submit');
+let pendingForm = null;
+
+function openConfirmModal({ title, message, buttonText, form }) {
+    pendingForm = form;
+    confirmTitle.textContent = title;
+    confirmMessage.textContent = message;
+    confirmSubmit.textContent = buttonText;
+    confirmModal.classList.add('is-open');
+    confirmModal.setAttribute('aria-hidden', 'false');
+    confirmSubmit.focus();
+}
+
+function closeConfirmModal() {
+    confirmModal.classList.remove('is-open');
+    confirmModal.setAttribute('aria-hidden', 'true');
+    pendingForm = null;
+}
+
 document.querySelectorAll('.chore-form').forEach(form => {
-    form.addEventListener('submit', function(e) {
-        const choreTitle = this.closest('.chore-card').querySelector('h3').textContent;
-        if (!confirm('Did you complete: ' + choreTitle + '?')) {
-            e.preventDefault();
-        }
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+        const choreTitle = form.closest('.chore-card').querySelector('h3').textContent.trim();
+        openConfirmModal({
+            title: 'Did you complete this chore?',
+            message: choreTitle,
+            buttonText: 'Yes, I Did This',
+            form,
+        });
     });
 });
 
-// Show confirmation before requesting a reward
 document.querySelectorAll('.reward-form').forEach(form => {
-    form.addEventListener('submit', function(e) {
-        const rewardTitle = this.closest('.reward-card').querySelector('h3').textContent;
-        if (!confirm('Do you want to request: ' + rewardTitle + '?')) {
-            e.preventDefault();
-        }
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+        const rewardTitle = form.closest('.reward-card').querySelector('h3').textContent.trim();
+        openConfirmModal({
+            title: 'Request this reward?',
+            message: rewardTitle,
+            buttonText: 'Yes, Request It',
+            form,
+        });
     });
+});
+
+confirmSubmit.addEventListener('click', () => {
+    if (pendingForm) {
+        pendingForm.submit();
+    }
+});
+
+document.querySelectorAll('[data-confirm-cancel]').forEach(element => {
+    element.addEventListener('click', closeConfirmModal);
+});
+
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && confirmModal.classList.contains('is-open')) {
+        closeConfirmModal();
+    }
 });
 </script>
 {% endblock %}

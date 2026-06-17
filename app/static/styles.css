@@ -294,6 +294,53 @@ footer {
     width: 100%;
 }
 
+/* --- Confirmation Modal --- */
+.confirm-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.confirm-modal.is-open {
+    display: flex;
+}
+
+.confirm-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(45, 55, 72, 0.55);
+}
+
+.confirm-modal__panel {
+    position: relative;
+    width: min(100%, 420px);
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 20px 45px rgba(45, 55, 72, 0.25);
+}
+
+.confirm-modal__panel h2 {
+    color: #2d3748;
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.confirm-modal__panel p {
+    color: #4a5568;
+    margin-bottom: 1.5rem;
+}
+
+.confirm-modal__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
 /* --- Login Page --- */
 .login-box {
     max-width: 400px;
@@ -517,6 +564,10 @@ footer {
 
     .chore-grid,
     .reward-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .confirm-modal__actions {
         grid-template-columns: 1fr;
     }
 
