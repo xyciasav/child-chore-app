@@ -29,6 +29,7 @@ class Child(ChildBase):
 # --- Chore Schemas ---
 class ChoreBase(BaseModel):
     title: str
+    room: str = "General"
     description: str = ""
     coin_value: float = 1.0
     active: bool = True
@@ -40,6 +41,7 @@ class ChoreCreate(ChoreBase):
 
 class ChoreUpdate(BaseModel):
     title: Optional[str] = None
+    room: Optional[str] = None
     description: Optional[str] = None
     coin_value: Optional[float] = None
     active: Optional[bool] = None

@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
@@ -24,8 +26,20 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         await db.refresh(child)
 
     # Get active chores
-    chores_result = await db.execute(select(Chore).where(Chore.active == True))
+    chores_result = await db.execute(
+        select(Chore)
+        .where(Chore.active == True)
+        .order_by(Chore.room, Chore.title)
+    )
     chores = chores_result.scalars().all()
+    chore_groups_by_room = OrderedDict()
+    for chore in chores:
+        room = (chore.room or "General").strip() or "General"
+        chore_groups_by_room.setdefault(room, []).append(chore)
+    chore_groups = [
+        {"room": room, "chores": grouped_chores}
+        for room, grouped_chores in chore_groups_by_room.items()
+    ]
 
     # Get active rewards
     rewards_result = await db.execute(select(Reward).where(Reward.active == True))
@@ -53,6 +67,7 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         "request": request,
         "child": child,
         "chores": chores,
+        "chore_groups": chore_groups,
         "rewards": rewards,
         "pending_chores": pending_chores,
         "pending_rewards": pending_rewards,

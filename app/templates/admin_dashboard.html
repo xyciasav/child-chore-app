@@ -58,6 +58,10 @@
                         <input type="text" id="chore-title" name="title" required>
                     </div>
                     <div class="form-group">
+                        <label for="chore-room">Room:</label>
+                        <input type="text" id="chore-room" name="room" value="General" list="room-suggestions" required>
+                    </div>
+                    <div class="form-group">
                         <label for="chore-coin-value">Coins:</label>
                         <input type="number" id="chore-coin-value" name="coin_value" step="0.1" value="1.0" required>
                     </div>
@@ -76,6 +80,7 @@
             <div class="manage-item">
                 <div class="manage-info">
                     <strong>{{ chore.title }}</strong>
+                    <span class="room-badge">{{ chore.room or 'General' }}</span>
                     <span class="coin-value">{{ chore.coin_value }} 🪙</span>
                     <span class="status-badge status-{{ 'active' if chore.active else 'inactive' }}">
                         {{ 'Active' if chore.active else 'Inactive' }}
@@ -102,6 +107,10 @@
                         <input type="text" id="edit-chore-title-{{ chore.id }}" name="title" value="{{ chore.title }}" required>
                     </div>
                     <div class="form-group">
+                        <label for="edit-chore-room-{{ chore.id }}">Room:</label>
+                        <input type="text" id="edit-chore-room-{{ chore.id }}" name="room" value="{{ chore.room or 'General' }}" list="room-suggestions" required>
+                    </div>
+                    <div class="form-group">
                         <label for="edit-chore-coin-value-{{ chore.id }}">Coins:</label>
                         <input type="number" id="edit-chore-coin-value-{{ chore.id }}" name="coin_value" step="0.1" value="{{ chore.coin_value }}" required>
                     </div>
@@ -122,6 +131,14 @@
             {% endfor %}
         </div>
     </div>
+
+    <datalist id="room-suggestions">
+        <option value="Bedroom"></option>
+        <option value="Bathroom"></option>
+        <option value="Kitchen"></option>
+        <option value="Living Room"></option>
+        <option value="General"></option>
+    </datalist>
 
     <!-- Pending Reward Redemptions -->
     <div id="pending-rewards" class="tab-content">

@@ -67,7 +67,7 @@ async def admin_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
     pending_chores = pending_chores_result.scalars().all()
 
     # Get all chores
-    chores_result = await db.execute(select(Chore))
+    chores_result = await db.execute(select(Chore).order_by(Chore.room, Chore.title))
     chores = chores_result.scalars().all()
 
     # Get all rewards
@@ -217,6 +217,7 @@ async def deny_reward(
 async def add_chore(
     request: Request,
     title: str = Form(...),
+    room: str = Form("General"),
     description: str = Form(""),
     coin_value: float = Form(1.0),
     db: AsyncSession = Depends(get_db)
@@ -228,6 +229,7 @@ async def add_chore(
 
     chore = Chore(
         title=title,
+        room=room.strip() or "General",
         description=description,
         coin_value=coin_value,
         active=True
@@ -261,6 +263,7 @@ async def edit_chore(
     request: Request,
     chore_id: int = Form(...),
     title: str = Form(...),
+    room: str = Form("General"),
     description: str = Form(""),
     coin_value: float = Form(1.0),
     active: bool = Form(False),
@@ -275,6 +278,7 @@ async def edit_chore(
     chore = chore_result.scalar_one_or_none()
     if chore:
         chore.title = title
+        chore.room = room.strip() or "General"
         chore.description = description
         chore.coin_value = coin_value
         chore.active = active

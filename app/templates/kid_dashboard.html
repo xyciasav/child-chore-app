@@ -15,8 +15,11 @@
     <!-- Active Chores Section -->
     <section class="section">
         <h2>My Chores</h2>
+        {% for group in chore_groups %}
+        <div class="room-section">
+        <h3 class="room-heading">{{ group.room }}</h3>
         <div class="chore-grid">
-            {% for chore in chores %}
+            {% for chore in group.chores %}
             <div class="chore-card">
                 <h3>{{ chore.title }}</h3>
                 <p class="chore-description">{{ chore.description }}</p>
@@ -28,6 +31,10 @@
             </div>
             {% endfor %}
         </div>
+        </div>
+        {% else %}
+        <p class="empty-state">No chores yet.</p>
+        {% endfor %}
     </section>
 
     <!-- Pending Approvals Section -->

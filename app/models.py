@@ -42,6 +42,7 @@ class Chore(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(200), nullable=False)
+    room = Column(String(100), nullable=False, default="General")
     description = Column(String(500), default="")
     coin_value = Column(Float, default=1.0)
     active = Column(Boolean, default=True)

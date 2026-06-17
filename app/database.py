@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+from sqlalchemy import text
 from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
@@ -38,6 +39,13 @@ async def init_db():
     from app.models import Base
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        if engine.url.drivername.startswith("sqlite"):
+            columns = await conn.execute(text("PRAGMA table_info(chores)"))
+            column_names = {row[1] for row in columns.fetchall()}
+            if "room" not in column_names:
+                await conn.execute(
+                    text("ALTER TABLE chores ADD COLUMN room VARCHAR(100) NOT NULL DEFAULT 'General'")
+                )
 
 
 async def get_db():
