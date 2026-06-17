@@ -20,6 +20,7 @@ ADMIN_TABS = {
     "manage_chores": "/admin?tab=manage-chores",
     "pending_rewards": "/admin?tab=pending-rewards",
     "manage_rewards": "/admin?tab=manage-rewards",
+    "children": "/admin?tab=children",
 }
 
 
@@ -353,6 +354,36 @@ async def delete_reward(
         reward.active = False
         await db.commit()
     return RedirectResponse(url=ADMIN_TABS["manage_rewards"], status_code=303)
+
+
+@router.post("/admin/child/name")
+async def update_child_name(
+    request: Request,
+    name: str = Form(...),
+    child_id: int = Form(0),
+    db: AsyncSession = Depends(get_db)
+):
+    """Create or update a child display name."""
+    redirect = check_admin_cookie(request)
+    if redirect:
+        return redirect
+
+    clean_name = name.strip() or "Child"
+    child = None
+    if child_id:
+        child_result = await db.execute(select(Child).where(Child.id == child_id))
+        child = child_result.scalar_one_or_none()
+
+    if not child:
+        child_result = await db.execute(select(Child))
+        child = child_result.scalar_one_or_none()
+
+    if child:
+        child.name = clean_name
+    else:
+        db.add(Child(name=clean_name, coins=0.0))
+    await db.commit()
+    return RedirectResponse(url=ADMIN_TABS["children"], status_code=303)
 
 
 @router.post("/admin/logout")

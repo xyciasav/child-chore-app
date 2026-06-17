@@ -64,6 +64,13 @@ footer {
 }
 
 /* --- Coin Balance --- */
+.kid-greeting {
+    color: #2d3748;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
 .coin-balance {
     display: flex;
     align-items: center;

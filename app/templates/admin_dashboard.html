@@ -251,6 +251,18 @@
     <!-- Children -->
     <div id="children" class="tab-content">
         <h2>Children</h2>
+        <div class="admin-form-box">
+            <h3>Child Name</h3>
+            {% set primary_child = children[0] if children else None %}
+            <form action="/admin/child/name" method="post" class="admin-form">
+                <input type="hidden" name="child_id" value="{{ primary_child.id if primary_child else 0 }}">
+                <div class="form-group">
+                    <label for="child-name">Name:</label>
+                    <input type="text" id="child-name" name="name" value="{{ primary_child.name if primary_child else 'Child' }}" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Name</button>
+            </form>
+        </div>
         <div class="manage-list">
             {% for child in children %}
             <div class="manage-item">
