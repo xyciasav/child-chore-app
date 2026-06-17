@@ -82,6 +82,9 @@
                     </span>
                 </div>
                 <div class="manage-actions">
+                    <button type="button" class="btn btn-outline edit-chore-btn" data-chore-id="{{ chore.id }}">
+                        Edit
+                    </button>
                     <form action="/admin/chore/delete" method="post" class="inline-form">
                         <input type="hidden" name="chore_id" value="{{ chore.id }}">
                         <button type="submit" class="btn btn-danger" 
@@ -91,6 +94,31 @@
                     </form>
                 </div>
             </div>
+            <form action="/admin/chore/edit" method="post" class="admin-form edit-chore-form" id="edit-chore-{{ chore.id }}">
+                <input type="hidden" name="chore_id" value="{{ chore.id }}">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-chore-title-{{ chore.id }}">Title:</label>
+                        <input type="text" id="edit-chore-title-{{ chore.id }}" name="title" value="{{ chore.title }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-chore-coin-value-{{ chore.id }}">Coins:</label>
+                        <input type="number" id="edit-chore-coin-value-{{ chore.id }}" name="coin_value" step="0.1" value="{{ chore.coin_value }}" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-chore-description-{{ chore.id }}">Description:</label>
+                    <textarea id="edit-chore-description-{{ chore.id }}" name="description" rows="2">{{ chore.description }}</textarea>
+                </div>
+                <label class="checkbox-row">
+                    <input type="checkbox" name="active" value="true" {% if chore.active %}checked{% endif %}>
+                    Active
+                </label>
+                <div class="edit-form-actions">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-outline cancel-edit-chore-btn" data-chore-id="{{ chore.id }}">Cancel</button>
+                </div>
+            </form>
             {% endfor %}
         </div>
     </div>
@@ -212,6 +240,20 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         // Add active class to clicked tab and corresponding content
         this.classList.add('active');
         document.getElementById(this.dataset.tab).classList.add('active');
+    });
+});
+
+document.querySelectorAll('.edit-chore-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const form = document.getElementById('edit-chore-' + this.dataset.choreId);
+        form.classList.add('is-open');
+        form.querySelector('input[name="title"]').focus();
+    });
+});
+
+document.querySelectorAll('.cancel-edit-chore-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.getElementById('edit-chore-' + this.dataset.choreId).classList.remove('is-open');
     });
 });
 </script>

@@ -533,6 +533,39 @@ footer {
     gap: 0.5rem;
 }
 
+/* --- Inline Editors --- */
+.edit-chore-form {
+    display: none;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    margin: -0.5rem 0 0.75rem;
+    padding: 1rem;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.edit-chore-form.is-open {
+    display: flex;
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #4a5568;
+}
+
+.checkbox-row input {
+    width: 1rem;
+    height: 1rem;
+}
+
+.edit-form-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
 /* --- Inline Forms --- */
 .inline-form {
     display: inline;
@@ -580,6 +613,19 @@ footer {
     .approval-actions {
         width: 100%;
         justify-content: center;
+    }
+
+    .manage-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .manage-info,
+    .manage-actions,
+    .edit-form-actions {
+        flex-direction: column;
+        align-items: stretch;
     }
 
     .form-row {

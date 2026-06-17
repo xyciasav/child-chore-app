@@ -256,6 +256,32 @@ async def delete_chore(
     return RedirectResponse(url="/admin", status_code=303)
 
 
+@router.post("/admin/chore/edit")
+async def edit_chore(
+    request: Request,
+    chore_id: int = Form(...),
+    title: str = Form(...),
+    description: str = Form(""),
+    coin_value: float = Form(1.0),
+    active: bool = Form(False),
+    db: AsyncSession = Depends(get_db)
+):
+    """Edit an existing chore."""
+    redirect = check_admin_cookie(request)
+    if redirect:
+        return redirect
+
+    chore_result = await db.execute(select(Chore).where(Chore.id == chore_id))
+    chore = chore_result.scalar_one_or_none()
+    if chore:
+        chore.title = title
+        chore.description = description
+        chore.coin_value = coin_value
+        chore.active = active
+        await db.commit()
+    return RedirectResponse(url="/admin", status_code=303)
+
+
 @router.post("/admin/reward/add")
 async def add_reward(
     request: Request,
