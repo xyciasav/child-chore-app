@@ -336,6 +336,32 @@ async def add_reward(
     await db.commit()
     return RedirectResponse(url=ADMIN_TABS["manage_rewards"], status_code=303)
 
+@router.post("/admin/reward/edit")
+async def edit_reward(
+    request: Request,
+    reward_id: int = Form(...),
+    title: str = Form(...),
+    description: str = Form(""),
+    coin_cost: float = Form(0.0),
+    active: bool = Form(False),
+    db: AsyncSession = Depends(get_db)
+):
+    """Edit an existing reward."""
+    redirect = check_admin_cookie(request)
+    if redirect:
+        return redirect
+
+    reward_result = await db.execute(select(Reward).where(Reward.id == reward_id))
+    reward = reward_result.scalar_one_or_none()
+
+    if reward:
+        reward.title = title
+        reward.description = description
+        reward.coin_cost = coin_cost
+        reward.active = active
+        await db.commit()
+
+    return RedirectResponse(url=ADMIN_TABS["manage_rewards"], status_code=303)
 
 @router.post("/admin/reward/delete")
 async def delete_reward(

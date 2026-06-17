@@ -223,29 +223,64 @@
             </form>
         </div>
 
-        <!-- Existing Rewards List -->
-        <div class="manage-list">
-            {% for reward in rewards %}
-            <div class="manage-item">
-                <div class="manage-info">
-                    <strong>{{ reward.title }}</strong>
-                    <span class="coin-value">{{ reward.coin_cost }} 🪙</span>
-                    <span class="status-badge status-{{ 'active' if reward.active else 'inactive' }}">
-                        {{ 'Active' if reward.active else 'Inactive' }}
-                    </span>
+    <!-- Existing Rewards List -->
+    <div class="manage-list">
+        {% for reward in rewards %}
+        <div class="manage-item">
+            <div class="manage-info">
+                <strong>{{ reward.title }}</strong>
+                <span class="coin-value">{{ reward.coin_cost }} 🪙</span>
+                <span class="status-badge status-{{ 'active' if reward.active else 'inactive' }}">
+                    {{ 'Active' if reward.active else 'Inactive' }}
+                </span>
+            </div>
+
+            <div class="manage-actions">
+                <button type="button" class="btn btn-outline edit-reward-btn" data-reward-id="{{ reward.id }}">
+                    Edit
+                </button>
+
+                <form action="/admin/reward/delete" method="post" class="inline-form">
+                    <input type="hidden" name="reward_id" value="{{ reward.id }}">
+                    <button type="submit" class="btn btn-danger"
+                            onclick="return confirm('Archive this reward? It will be hidden from the kid dashboard but history will stay.')">
+                        Archive
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <form action="/admin/reward/edit" method="post" class="admin-form edit-reward-form" id="edit-reward-{{ reward.id }}">
+            <input type="hidden" name="reward_id" value="{{ reward.id }}">
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="edit-reward-title-{{ reward.id }}">Title:</label>
+                    <input type="text" id="edit-reward-title-{{ reward.id }}" name="title" value="{{ reward.title }}" required>
                 </div>
-                <div class="manage-actions">
-                    <form action="/admin/reward/delete" method="post" class="inline-form">
-                        <input type="hidden" name="reward_id" value="{{ reward.id }}">
-                        <button type="submit" class="btn btn-danger" 
-                                onclick="return confirm('Archive this reward? It will be hidden from the kid dashboard but history will stay.')">
-                            Archive
-                        </button>
-                    </form>
+
+                <div class="form-group">
+                    <label for="edit-reward-coin-cost-{{ reward.id }}">Coin Cost:</label>
+                    <input type="number" id="edit-reward-coin-cost-{{ reward.id }}" name="coin_cost" step="0.1" value="{{ reward.coin_cost }}" required>
                 </div>
             </div>
-            {% endfor %}
-        </div>
+
+            <div class="form-group">
+                <label for="edit-reward-description-{{ reward.id }}">Description:</label>
+                <textarea id="edit-reward-description-{{ reward.id }}" name="description" rows="2">{{ reward.description }}</textarea>
+            </div>
+
+            <label class="checkbox-row">
+                <input type="checkbox" name="active" value="true" {% if reward.active %}checked{% endif %}>
+                Active
+            </label>
+
+            <div class="edit-form-actions">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <button type="button" class="btn btn-outline cancel-edit-reward-btn" data-reward-id="{{ reward.id }}">Cancel</button>
+            </div>
+        </form>
+        {% endfor %}
     </div>
 
     <!-- Children -->
@@ -329,6 +364,20 @@ document.querySelectorAll('.edit-chore-btn').forEach(btn => {
 document.querySelectorAll('.cancel-edit-chore-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         document.getElementById('edit-chore-' + this.dataset.choreId).classList.remove('is-open');
+    });
+});
+
+document.querySelectorAll('.edit-reward-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const form = document.getElementById('edit-reward-' + this.dataset.rewardId);
+        form.classList.add('is-open');
+        form.querySelector('input[name="title"]').focus();
+    });
+});
+
+document.querySelectorAll('.cancel-edit-reward-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.getElementById('edit-reward-' + this.dataset.rewardId).classList.remove('is-open');
     });
 });
 </script>
