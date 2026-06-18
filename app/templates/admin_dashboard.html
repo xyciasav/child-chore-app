@@ -51,7 +51,7 @@
                 <div class="approval-info">
                     <strong>{{ submission.child.name }}</strong> completed 
                     <strong>{{ submission.chore.title }}</strong>
-                    <span class="coin-value">(+{{ submission.chore.coin_value }} 🪙)</span>
+                    <span class="coin-value">(+{{ submission.chore.coin_value|int }} 🪙)</span>
                 </div>
                 <div class="approval-actions">
                     <form action="/admin/chore/approve" method="post" class="inline-form">
@@ -90,7 +90,7 @@
                     </div>
                     <div class="form-group">
                         <label for="chore-coin-value">Coins:</label>
-                        <input type="number" id="chore-coin-value" name="coin_value" step="0.1" value="1.0" required>
+                        <input type="number" id="chore-coin-value" name="coin_value" step="1" value="1.0" required>
                     </div>
                 </div>
                 <div class="form-group">
@@ -108,7 +108,7 @@
                 <div class="manage-info">
                     <strong>{{ chore.title }}</strong>
                     <span class="room-badge">{{ chore.room or 'General' }}</span>
-                    <span class="coin-value">{{ chore.coin_value }} 🪙</span>
+                    <span class="coin-value">{{ chore.coin_value|int }} 🪙</span>
                     <span class="status-badge status-{{ 'active' if chore.active else 'inactive' }}">
                         {{ 'Active' if chore.active else 'Inactive' }}
                     </span>
@@ -139,7 +139,7 @@
                     </div>
                     <div class="form-group">
                         <label for="edit-chore-coin-value-{{ chore.id }}">Coins:</label>
-                        <input type="number" id="edit-chore-coin-value-{{ chore.id }}" name="coin_value" step="0.1" value="{{ chore.coin_value }}" required>
+                        <input type="number" id="edit-chore-coin-value-{{ chore.id }}" name="coin_value" step="1" value="{{ chore.coin_value }}" required>
                     </div>
                 </div>
                 <div class="form-group">
@@ -177,7 +177,7 @@
                 <div class="approval-info">
                     <strong>{{ redemption.child.name }}</strong> wants 
                     <strong>{{ redemption.reward.title }}</strong>
-                    <span class="coin-value">(-{{ redemption.reward.coin_cost }} 🪙)</span>
+                    <span class="coin-value">(-{{ redemption.reward.coin_cost|int }} 🪙)</span>
                 </div>
                 <div class="approval-actions">
                     <form action="/admin/reward/approve" method="post" class="inline-form">
@@ -212,7 +212,7 @@
                     </div>
                     <div class="form-group">
                         <label for="reward-coin-cost">Coin Cost:</label>
-                        <input type="number" id="reward-coin-cost" name="coin_cost" step="0.1" value="1.0" required>
+                        <input type="number" id="reward-coin-cost" name="coin_cost" step="1" value="1.0" required>
                     </div>
                 </div>
                 <div class="form-group">
@@ -229,7 +229,7 @@
         <div class="manage-item">
             <div class="manage-info">
                 <strong>{{ reward.title }}</strong>
-                <span class="coin-value">{{ reward.coin_cost }} 🪙</span>
+                <span class="coin-value">{{ reward.coin_cost|int }} 🪙</span>
                 <span class="status-badge status-{{ 'active' if reward.active else 'inactive' }}">
                     {{ 'Active' if reward.active else 'Inactive' }}
                 </span>
@@ -261,7 +261,7 @@
 
                 <div class="form-group">
                     <label for="edit-reward-coin-cost-{{ reward.id }}">Coin Cost:</label>
-                    <input type="number" id="edit-reward-coin-cost-{{ reward.id }}" name="coin_cost" step="0.1" value="{{ reward.coin_cost }}" required>
+                    <input type="number" id="edit-reward-coin-cost-{{ reward.id }}" name="coin_cost" step="1" value="{{ reward.coin_cost }}" required>
                 </div>
             </div>
 
@@ -304,7 +304,7 @@
             <div class="manage-item">
                 <div class="manage-info">
                     <strong>{{ child.name }}</strong>
-                    <span class="coin-value">{{ child.coins }} 🪙</span>
+                    <span class="coin-value">{{ child.coins|int }} 🪙</span>
                 </div>
             </div>
             {% endfor %}

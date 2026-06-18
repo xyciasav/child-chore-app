@@ -10,7 +10,7 @@
     <!-- Coin Balance Display -->
     <div class="coin-balance">
         <span class="coin-icon">🪙</span>
-        <span class="coin-amount">{{ child.coins }}</span>
+        <span class="coin-amount">{{ child.coins|int }}</span>
         <span class="coin-label">coins</span>
     </div>
     {% if goal_reward %}
@@ -24,7 +24,7 @@
         </div>
 
         <div class="saving-goal-progress-text">
-            {{ child.coins }} / {{ goal_reward.coin_cost }} coins
+            {{ child.coins }} / {{ goal_reward.coin_cost|int }} coins
         </div>
 
         <div class="saving-goal-bar" aria-label="Saving goal progress">
@@ -35,7 +35,7 @@
         <p class="saving-goal-ready">🎉 You have enough coins for this!</p>
         {% else %}
         <p class="saving-goal-needed">
-            {{ goal_reward.coin_cost - child.coins }} more coins to go!
+            {{ goal_reward.coin_cost - child.coins|int }} more coins to go!
         </p>
         {% endif %}
     </div>
@@ -103,7 +103,7 @@
             <div class="chore-card" data-chore-title="{{ chore.title }}" data-chore-room="{{ group.room }}" data-chore-coins="{{ chore.coin_value }}">
                 <h3>{{ chore.title }}</h3>
                 <p class="chore-description">{{ chore.description }}</p>
-                <div class="chore-reward">{{ chore.coin_value }} 🪙</div>
+                <div class="chore-reward">{{ chore.coin_value|int }} 🪙</div>
                 <form action="/kid/chore/submit" method="post" class="chore-form">
                     <input type="hidden" name="chore_id" value="{{ chore.id }}">
                     <button type="submit" class="btn btn-primary">I Did This!</button>
@@ -144,7 +144,7 @@
                 <div class="reward-card">
                     <h3>{{ reward.title }}</h3>
                     <p class="reward-description">{{ reward.description }}</p>
-                    <div class="reward-cost">{{ reward.coin_cost }} 🪙</div>
+                    <div class="reward-cost">{{ reward.coin_cost|int }} 🪙</div>
 
                     <form action="/kid/reward/request" method="post" class="reward-form">
                         <input type="hidden" name="reward_id" value="{{ reward.id }}">
