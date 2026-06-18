@@ -13,6 +13,33 @@
         <span class="coin-amount">{{ child.coins }}</span>
         <span class="coin-label">coins</span>
     </div>
+    {% if goal_reward %}
+    <div class="saving-goal-card">
+        <div class="saving-goal-header">
+            <span class="saving-goal-icon">🎯</span>
+            <div>
+                <span class="saving-goal-label">Saving for</span>
+                <h2>{{ goal_reward.title }}</h2>
+            </div>
+        </div>
+
+        <div class="saving-goal-progress-text">
+            {{ child.coins }} / {{ goal_reward.coin_cost }} coins
+        </div>
+
+        <div class="saving-goal-bar" aria-label="Saving goal progress">
+            <div class="saving-goal-fill" style="width: {{ goal_progress_percent }}%;"></div>
+        </div>
+
+        {% if child.coins >= goal_reward.coin_cost %}
+        <p class="saving-goal-ready">🎉 You have enough coins for this!</p>
+        {% else %}
+        <p class="saving-goal-needed">
+            {{ goal_reward.coin_cost - child.coins }} more coins to go!
+        </p>
+        {% endif %}
+    </div>
+    {% endif %}
 
     <nav class="kid-tabs" aria-label="Kid dashboard tabs">
         <button type="button" class="kid-tab-btn active" data-kid-tab="kid-chores">Chores</button>
