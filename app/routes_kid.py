@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.responses import RedirectResponse
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, joinedload
 
@@ -64,6 +64,113 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
     )
     pending_rewards = pending_rewards_result.scalars().all()
 
+        # Build automatic badges from approved chores and current coins
+    approved_chores_result = await db.execute(
+        select(ChoreSubmission)
+        .where(ChoreSubmission.child_id == child.id)
+        .where(ChoreSubmission.status == ChoreStatus.APPROVED)
+        .options(selectinload(ChoreSubmission.chore))
+    )
+    approved_chores = approved_chores_result.scalars().all()
+
+    approved_chore_count = len(approved_chores)
+    bathroom_count = sum(
+        1 for submission in approved_chores
+        if submission.chore and (submission.chore.room or "").lower() == "bathroom"
+    )
+    toy_count = sum(
+        1 for submission in approved_chores
+        if submission.chore and "toy" in (submission.chore.title or "").lower()
+    )
+    teeth_count = sum(
+        1 for submission in approved_chores
+        if submission.chore and "teeth" in (submission.chore.title or "").lower()
+    )
+    sock_count = sum(
+        1 for submission in approved_chores
+        if submission.chore and "sock" in (submission.chore.title or "").lower()
+    )
+    plant_count = sum(
+        1 for submission in approved_chores
+        if submission.chore and "plant" in (submission.chore.title or "").lower()
+    )
+
+    badges = []
+
+    if approved_chore_count >= 1:
+        badges.append({
+            "icon": "⭐",
+            "title": "First Chore",
+            "description": "Completed your first approved chore."
+        })
+
+    if approved_chore_count >= 10:
+        badges.append({
+            "icon": "🏆",
+            "title": "10 Chores Complete",
+            "description": "Completed 10 approved chores."
+        })
+
+    if child.coins >= 100:
+        badges.append({
+            "icon": "💰",
+            "title": "100 Coin Club",
+            "description": "Saved up 100 coins."
+        })
+
+    if bathroom_count >= 5:
+        badges.append({
+            "icon": "🧼",
+            "title": "Bathroom Helper",
+            "description": "Completed 5 bathroom chores."
+        })
+
+    if toy_count >= 5:
+        badges.append({
+            "icon": "🧸",
+            "title": "Toy Tamer",
+            "description": "Completed 5 toy chores."
+        })
+
+    if teeth_count >= 5:
+        badges.append({
+            "icon": "🦷",
+            "title": "Toothbrush Champion",
+            "description": "Brushed teeth 5 approved times."
+        })
+
+    if sock_count >= 5:
+        badges.append({
+            "icon": "🧦",
+            "title": "Sock Hunter",
+            "description": "Found lots of socks."
+        })
+
+    if plant_count >= 3:
+        badges.append({
+            "icon": "🌱",
+            "title": "Plant Helper",
+            "description": "Helped water plants 3 times."
+        })
+
+    locked_badges = [
+        {
+            "icon": "❓",
+            "title": "Mystery Badge",
+            "description": "Keep doing chores to unlock this."
+        },
+        {
+            "icon": "🔥",
+            "title": "Rage Clean Jr.",
+            "description": "A special helper badge."
+        },
+        {
+            "icon": "🐉",
+            "title": "Dragon Level 1",
+            "description": "Keep leveling up."
+        }
+    ]
+
     goal_reward = child.goal_reward if child and child.goal_reward and child.goal_reward.active else None
     goal_progress_percent = 0
 
@@ -78,6 +185,8 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         "rewards": rewards,
         "goal_reward": goal_reward,
         "goal_progress_percent": goal_progress_percent,
+        "badges": badges,
+        "locked_badges": locked_badges,
         "pending_chores": pending_chores,
         "pending_rewards": pending_rewards,
     })

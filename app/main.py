@@ -8,7 +8,7 @@ from app.routes_kid import router as kid_router
 from app.routes_admin import router as admin_router
 from app.routes_api import router as api_router
 
-APP_VERSION = "2026-06-17-child-name"
+APP_VERSION = "2026-06-17-kid-badges"
 APP_FEATURES = (
     "admin_chore_editing",
     "kid_in_page_confirmations",
@@ -18,6 +18,7 @@ APP_FEATURES = (
     "kid_chore_reward_tabs",
     "admin_child_name",
     "admin_metrics",
+    "kid_badges",
 )
 
 

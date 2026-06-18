@@ -41,6 +41,28 @@
     </div>
     {% endif %}
 
+    <section class="badge-shelf section">
+        <h2>My Badges 🏅</h2>
+
+        <div class="badge-grid">
+            {% for badge in badges %}
+            <div class="badge-card">
+                <div class="badge-icon">{{ badge.icon }}</div>
+                <strong>{{ badge.title }}</strong>
+                <span>{{ badge.description }}</span>
+            </div>
+            {% endfor %}
+
+            {% for badge in locked_badges %}
+            <div class="badge-card badge-card-locked">
+                <div class="badge-icon">{{ badge.icon }}</div>
+                <strong>{{ badge.title }}</strong>
+                <span>{{ badge.description }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
     <nav class="kid-tabs" aria-label="Kid dashboard tabs">
         <button type="button" class="kid-tab-btn active" data-kid-tab="kid-chores">Chores</button>
         <button type="button" class="kid-tab-btn" data-kid-tab="kid-rewards">Rewards</button>
