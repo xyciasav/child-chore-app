@@ -937,3 +937,23 @@ footer {
         opacity: 1;
     }
 }
+
+.kid-tab-content {
+    display: none;
+}
+
+.kid-tab-content.active {
+    display: block;
+}
+
+.reward-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.reward-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
