@@ -86,56 +86,58 @@
     </div>
 
     <div id="kid-rewards" class="kid-tab-content">
-    <!-- Rewards Section -->
-    <section class="section">
-        <h2>Rewards 🎁</h2>
-        <div class="reward-grid">
-            {% for reward in rewards %}
-            <div class="reward-card">
-                <h3>{{ reward.title }}</h3>
-                <p class="reward-description">{{ reward.description }}</p>
-                <div class="reward-cost">{{ reward.coin_cost }} 🪙</div>
-                <form action="/kid/reward/request" method="post" class="reward-form">
-                    <input type="hidden" name="reward_id" value="{{ reward.id }}">
-                    <button type="submit" class="btn btn-secondary" 
-                            {% if child.coins < reward.coin_cost %}disabled{% endif %}>
-                        {% if child.coins < reward.coin_cost %}
-                            Not Enough Coins
-                        {% else %}
-                            I Want This!
-                        {% endif %}
-                    </button>
-                </form>
-            </div>
-            {% endfor %}
-        </div>
-    </section>
+        <!-- Rewards Section -->
+        <section class="section">
+            <h2>Rewards 🎁</h2>
 
-    <form action="/kid/reward/goal" method="post" class="reward-goal-form">
-        <input type="hidden" name="reward_id" value="{{ reward.id }}">
-        <button type="submit" class="btn btn-outline">
-            {% if goal_reward and goal_reward.id == reward.id %}
-                Current Goal 🎯
-            {% else %}
-                Set as Goal
-            {% endif %}
-        </button>
-    </form>
+            <div class="reward-grid">
+                {% for reward in rewards %}
+                <div class="reward-card">
+                    <h3>{{ reward.title }}</h3>
+                    <p class="reward-description">{{ reward.description }}</p>
+                    <div class="reward-cost">{{ reward.coin_cost }} 🪙</div>
 
-    <!-- Pending Reward Requests -->
-    {% if pending_rewards %}
-    <section class="section">
-        <h2>Reward Requests ⏳</h2>
-        <div class="pending-list">
-            {% for redemption in pending_rewards %}
-            <div class="pending-item">
-                <span>{{ redemption.reward.title }}</span>
-                <span class="status-badge status-pending">Pending</span>
+                    <form action="/kid/reward/request" method="post" class="reward-form">
+                        <input type="hidden" name="reward_id" value="{{ reward.id }}">
+                        <button type="submit" class="btn btn-secondary"
+                                {% if child.coins < reward.coin_cost %}disabled{% endif %}>
+                            {% if child.coins < reward.coin_cost %}
+                                Not Enough Coins
+                            {% else %}
+                                I Want This!
+                            {% endif %}
+                        </button>
+                    </form>
+
+                    <form action="/kid/reward/goal" method="post" class="reward-goal-form">
+                        <input type="hidden" name="reward_id" value="{{ reward.id }}">
+                        <button type="submit" class="btn btn-outline">
+                            {% if goal_reward and goal_reward.id == reward.id %}
+                                Current Goal 🎯
+                            {% else %}
+                                Set as Goal
+                            {% endif %}
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
-    </section>
-    {% endif %}
+        </section>
+
+        <!-- Pending Reward Requests -->
+        {% if pending_rewards %}
+        <section class="section">
+            <h2>Reward Requests ⏳</h2>
+            <div class="pending-list">
+                {% for redemption in pending_rewards %}
+                <div class="pending-item">
+                    <span>{{ redemption.reward.title }}</span>
+                    <span class="status-badge status-pending">Pending</span>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
     </div>
 </div>
 
