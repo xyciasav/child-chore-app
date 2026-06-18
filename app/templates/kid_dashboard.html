@@ -111,6 +111,17 @@
         </div>
     </section>
 
+    <form action="/kid/reward/goal" method="post" class="reward-goal-form">
+        <input type="hidden" name="reward_id" value="{{ reward.id }}">
+        <button type="submit" class="btn btn-outline">
+            {% if goal_reward and goal_reward.id == reward.id %}
+                Current Goal 🎯
+            {% else %}
+                Set as Goal
+            {% endif %}
+        </button>
+    </form>
+
     <!-- Pending Reward Requests -->
     {% if pending_rewards %}
     <section class="section">

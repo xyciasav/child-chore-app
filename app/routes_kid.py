@@ -1,6 +1,4 @@
 from collections import OrderedDict
-from unittest import result
-
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
@@ -19,7 +17,7 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
     """Child dashboard - shows chores, rewards, and coin balance."""
     # Get or create default child
     result = await db.execute(
-    select(Child).options(joinedload(Child.goal_reward))
+        select(Child).options(joinedload(Child.goal_reward))
     )
     child = result.scalar_one_or_none()
     if not child:
@@ -66,12 +64,20 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
     )
     pending_rewards = pending_rewards_result.scalars().all()
 
+    goal_reward = child.goal_reward if child and child.goal_reward and child.goal_reward.active else None
+    goal_progress_percent = 0
+
+    if goal_reward and goal_reward.coin_cost > 0:
+        goal_progress_percent = min(100, int((child.coins / goal_reward.coin_cost) * 100))
+
     return templates.TemplateResponse("kid_dashboard.html", {
         "request": request,
         "child": child,
         "chores": chores,
         "chore_groups": chore_groups,
         "rewards": rewards,
+        "goal_reward": goal_reward,
+        "goal_progress_percent": goal_progress_percent,
         "pending_chores": pending_chores,
         "pending_rewards": pending_rewards,
     })
@@ -107,6 +113,34 @@ async def submit_chore(
     await db.commit()
 
     return RedirectResponse(url="/kid", status_code=303)
+
+@router.post("/kid/reward/goal")
+async def set_reward_goal(
+    reward_id: int = Form(...),
+    db: AsyncSession = Depends(get_db)
+):
+    """Set a reward as the child's current saving goal."""
+    result = await db.execute(select(Child))
+    child = result.scalar_one_or_none()
+
+    if not child:
+        child = Child(name="Child", coins=0.0)
+        db.add(child)
+        await db.commit()
+        await db.refresh(child)
+
+    reward_result = await db.execute(
+        select(Reward)
+        .where(Reward.id == reward_id)
+        .where(Reward.active == True)
+    )
+    reward = reward_result.scalar_one_or_none()
+
+    if reward:
+        child.goal_reward_id = reward.id
+        await db.commit()
+
+    return RedirectResponse(url="/kid?tab=rewards", status_code=303)
 
 
 @router.post("/kid/reward/request")
