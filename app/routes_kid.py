@@ -1,10 +1,11 @@
 from collections import OrderedDict
+from unittest import result
 
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 
 from app.database import get_db
 from app.models import Child, Chore, ChoreSubmission, Reward, RewardRedemption, ChoreStatus, RewardRedemptionStatus
@@ -17,7 +18,9 @@ router = APIRouter()
 async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
     """Child dashboard - shows chores, rewards, and coin balance."""
     # Get or create default child
-    result = await db.execute(select(Child))
+    result = await db.execute(
+    select(Child).options(joinedload(Child.goal_reward))
+    )
     child = result.scalar_one_or_none()
     if not child:
         child = Child(name="Child", coins=0.0)

@@ -29,11 +29,13 @@ class Child(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False)
     coins = Column(Float, default=0.0)
+    goal_reward_id = Column(Integer, ForeignKey("rewards.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
     chore_submissions = relationship("ChoreSubmission", back_populates="child")
     reward_redemptions = relationship("RewardRedemption", back_populates="child")
+    goal_reward = relationship("Reward", foreign_keys=[goal_reward_id])
 
 
 class Chore(Base):

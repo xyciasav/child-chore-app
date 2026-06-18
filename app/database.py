@@ -39,12 +39,22 @@ async def init_db():
     from app.models import Base
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
         if engine.url.drivername.startswith("sqlite"):
-            columns = await conn.execute(text("PRAGMA table_info(chores)"))
-            column_names = {row[1] for row in columns.fetchall()}
-            if "room" not in column_names:
+            chore_columns = await conn.execute(text("PRAGMA table_info(chores)"))
+            chore_column_names = {row[1] for row in chore_columns.fetchall()}
+
+            if "room" not in chore_column_names:
                 await conn.execute(
                     text("ALTER TABLE chores ADD COLUMN room VARCHAR(100) NOT NULL DEFAULT 'General'")
+                )
+
+            child_columns = await conn.execute(text("PRAGMA table_info(children)"))
+            child_column_names = {row[1] for row in child_columns.fetchall()}
+
+            if "goal_reward_id" not in child_column_names:
+                await conn.execute(
+                    text("ALTER TABLE children ADD COLUMN goal_reward_id INTEGER")
                 )
 
 
