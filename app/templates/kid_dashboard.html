@@ -139,22 +139,19 @@
         <section class="section">
             <h2>Rewards 🎁</h2>
 
+            {% if affordable_rewards %}
+            <h3 class="reward-tier-heading">Ready Now ✨</h3>
             <div class="reward-grid">
-                {% for reward in rewards %}
-                <div class="reward-card">
+                {% for reward in affordable_rewards %}
+                <div class="reward-card reward-card-ready">
                     <h3>{{ reward.title }}</h3>
                     <p class="reward-description">{{ reward.description }}</p>
                     <div class="reward-cost">{{ reward.coin_cost|int }} 🪙</div>
 
                     <form action="/kid/reward/request" method="post" class="reward-form">
                         <input type="hidden" name="reward_id" value="{{ reward.id }}">
-                        <button type="submit" class="btn btn-secondary"
-                                {% if child.coins < reward.coin_cost %}disabled{% endif %}>
-                            {% if child.coins < reward.coin_cost %}
-                                Not Enough Coins
-                            {% else %}
-                                I Want This!
-                            {% endif %}
+                        <button type="submit" class="btn btn-secondary">
+                            I Want This!
                         </button>
                     </form>
 
@@ -171,6 +168,71 @@
                 </div>
                 {% endfor %}
             </div>
+            {% endif %}
+
+            {% if almost_rewards %}
+            <h3 class="reward-tier-heading">Almost There 🌟</h3>
+            <div class="reward-grid">
+                {% for reward in almost_rewards %}
+                <div class="reward-card">
+                    <h3>{{ reward.title }}</h3>
+                    <p class="reward-description">{{ reward.description }}</p>
+                    <div class="reward-cost">{{ reward.coin_cost|int }} 🪙</div>
+                    <p class="reward-needed">{{ (reward.coin_cost - child.coins)|int }} more coins needed</p>
+
+                    <form action="/kid/reward/request" method="post" class="reward-form">
+                        <input type="hidden" name="reward_id" value="{{ reward.id }}">
+                        <button type="submit" class="btn btn-secondary" disabled>
+                            Not Enough Coins
+                        </button>
+                    </form>
+
+                    <form action="/kid/reward/goal" method="post" class="reward-goal-form">
+                        <input type="hidden" name="reward_id" value="{{ reward.id }}">
+                        <button type="submit" class="btn btn-outline">
+                            {% if goal_reward and goal_reward.id == reward.id %}
+                                Current Goal 🎯
+                            {% else %}
+                                Set as Goal
+                            {% endif %}
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if save_up_rewards %}
+            <h3 class="reward-tier-heading">Save Up Rewards 🏆</h3>
+            <div class="reward-grid">
+                {% for reward in save_up_rewards %}
+                <div class="reward-card">
+                    <h3>{{ reward.title }}</h3>
+                    <p class="reward-description">{{ reward.description }}</p>
+                    <div class="reward-cost">{{ reward.coin_cost|int }} 🪙</div>
+                    <p class="reward-needed">{{ (reward.coin_cost - child.coins)|int }} more coins needed</p>
+
+                    <form action="/kid/reward/request" method="post" class="reward-form">
+                        <input type="hidden" name="reward_id" value="{{ reward.id }}">
+                        <button type="submit" class="btn btn-secondary" disabled>
+                            Not Enough Coins
+                        </button>
+                    </form>
+
+                    <form action="/kid/reward/goal" method="post" class="reward-goal-form">
+                        <input type="hidden" name="reward_id" value="{{ reward.id }}">
+                        <button type="submit" class="btn btn-outline">
+                            {% if goal_reward and goal_reward.id == reward.id %}
+                                Current Goal 🎯
+                            {% else %}
+                                Set as Goal
+                            {% endif %}
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
         </section>
 
         <!-- Pending Reward Requests -->

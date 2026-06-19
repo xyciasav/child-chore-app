@@ -42,9 +42,28 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         for room, grouped_chores in chore_groups_by_room.items()
     ]
 
-    # Get active rewards
-    rewards_result = await db.execute(select(Reward).where(Reward.active == True))
+        # Get active rewards
+    rewards_result = await db.execute(
+        select(Reward)
+        .where(Reward.active == True)
+        .order_by(Reward.coin_cost, Reward.title)
+    )
     rewards = rewards_result.scalars().all()
+
+    affordable_rewards = [
+        reward for reward in rewards
+        if child.coins >= reward.coin_cost
+    ]
+
+    almost_rewards = [
+        reward for reward in rewards
+        if child.coins < reward.coin_cost and reward.coin_cost - child.coins <= 25
+    ]
+
+    save_up_rewards = [
+        reward for reward in rewards
+        if child.coins < reward.coin_cost and reward.coin_cost - child.coins > 25
+    ]
 
     # Get pending chore submissions for this child
     pending_chores_result = await db.execute(
@@ -183,6 +202,9 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         "chores": chores,
         "chore_groups": chore_groups,
         "rewards": rewards,
+        "affordable_rewards": affordable_rewards,
+        "almost_rewards": almost_rewards,
+        "save_up_rewards": save_up_rewards,
         "goal_reward": goal_reward,
         "goal_progress_percent": goal_progress_percent,
         "badges": badges,
