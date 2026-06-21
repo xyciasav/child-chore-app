@@ -113,6 +113,7 @@
     <nav class="kid-tabs" aria-label="Kid dashboard tabs">
         <button type="button" class="kid-tab-btn active" data-kid-tab="kid-chores">Chores</button>
         <button type="button" class="kid-tab-btn" data-kid-tab="kid-rewards">Rewards</button>
+        <button type="button" class="kid-tab-btn" data-kid-tab="kid-games">Fun Zone {% if game_tickets %}({{ game_tickets }}){% endif %}</button>
     </nav>
 
     <div id="kid-chores" class="kid-tab-content active">
@@ -297,6 +298,45 @@
         </section>
         {% endif %}
     </div>
+
+    <div id="kid-games" class="kid-tab-content">
+        <section class="section fun-zone">
+            <div class="fun-zone-heading">
+                <div>
+                    <span class="daily-switch-eyebrow">Approval rewards</span>
+                    <h2>Fun Zone</h2>
+                    <p>Every chore your parent approves earns one play pass.</p>
+                </div>
+                <div class="game-ticket-count" aria-label="Available play passes">
+                    <strong>{{ game_tickets }}</strong>
+                    <span>play pass{% if game_tickets != 1 %}es{% endif %}</span>
+                </div>
+            </div>
+
+            <div class="game-card">
+                <div class="game-card-art" aria-hidden="true">🫧</div>
+                <div>
+                    <h3>Bubble Blitz</h3>
+                    <p>Pop as many bubbles as you can in 30 seconds.</p>
+                </div>
+                <form action="/kid/game/start" method="post" class="game-start-form">
+                    <button type="submit" class="btn btn-primary" {% if not game_tickets %}disabled{% endif %}>
+                        {% if game_tickets %}Use a Play Pass{% else %}Get a Chore Approved{% endif %}
+                    </button>
+                </form>
+            </div>
+
+            <div id="bubble-game" class="bubble-game" {% if request.query_params.get('play') != '1' %}hidden{% endif %}>
+                <div class="bubble-game-header">
+                    <span>Bubble Blitz</span>
+                    <strong><span id="bubble-score">0</span> pops</strong>
+                    <strong><span id="bubble-time">30</span>s</strong>
+                </div>
+                <div id="bubble-game-board" class="bubble-game-board" aria-label="Bubble Blitz game board"></div>
+                <p id="bubble-game-message" class="bubble-game-message">Tap the bubbles!</p>
+            </div>
+        </section>
+    </div>
 </div>
 
 <div class="confirm-modal" id="confirm-modal" aria-hidden="true">
@@ -356,7 +396,68 @@ document.querySelectorAll('.kid-tab-btn').forEach(button => {
 const initialKidTab = new URLSearchParams(window.location.search).get('tab');
 if (initialKidTab === 'rewards') {
     activateKidTab('kid-rewards', false);
+} else if (initialKidTab === 'games') {
+    activateKidTab('kid-games', false);
 }
+
+const bubbleGame = document.getElementById('bubble-game');
+const bubbleBoard = document.getElementById('bubble-game-board');
+const bubbleScore = document.getElementById('bubble-score');
+const bubbleTime = document.getElementById('bubble-time');
+const bubbleMessage = document.getElementById('bubble-game-message');
+
+function startBubbleGame() {
+    if (!bubbleGame || bubbleGame.hidden || !bubbleBoard) {
+        return;
+    }
+
+    const gameUrl = new URL(window.location);
+    gameUrl.searchParams.delete('play');
+    window.history.replaceState({}, '', gameUrl);
+
+    let score = 0;
+    let timeLeft = 30;
+    let gameOver = false;
+    bubbleScore.textContent = score;
+    bubbleTime.textContent = timeLeft;
+    bubbleMessage.textContent = 'Tap the bubbles!';
+    bubbleBoard.replaceChildren();
+
+    const addBubble = () => {
+        if (gameOver) return;
+        const bubble = document.createElement('button');
+        bubble.type = 'button';
+        bubble.className = 'game-bubble';
+        const size = 42 + Math.floor(Math.random() * 42);
+        bubble.style.width = `${size}px`;
+        bubble.style.height = `${size}px`;
+        bubble.style.left = `${Math.random() * 78 + 4}%`;
+        bubble.style.top = `${Math.random() * 70 + 8}%`;
+        bubble.addEventListener('click', () => {
+            if (gameOver) return;
+            score += 1;
+            bubbleScore.textContent = score;
+            bubble.remove();
+            addBubble();
+        }, { once: true });
+        bubbleBoard.appendChild(bubble);
+    };
+
+    for (let index = 0; index < 5; index += 1) addBubble();
+
+    const timer = window.setInterval(() => {
+        timeLeft -= 1;
+        bubbleTime.textContent = timeLeft;
+        if (timeLeft <= 0) {
+            gameOver = true;
+            window.clearInterval(timer);
+            bubbleBoard.replaceChildren();
+            bubbleMessage.textContent = `Great popping! You got ${score} bubbles.`;
+        }
+    }, 1000);
+}
+
+startBubbleGame();
 
 function openConfirmModal({ title, message, buttonText, form, actionType }) {
     pendingForm = form;

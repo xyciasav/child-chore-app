@@ -360,6 +360,128 @@ footer {
     margin: 1rem 0 0;
 }
 
+.fun-zone {
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.fun-zone-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.fun-zone-heading h2 {
+    color: #2d3748;
+    margin: 0.2rem 0;
+}
+
+.fun-zone-heading p {
+    color: #718096;
+    margin: 0;
+}
+
+.game-ticket-count {
+    display: flex;
+    flex-direction: column;
+    min-width: 100px;
+    padding: 0.6rem 0.8rem;
+    border-radius: 12px;
+    background: #fffaf0;
+    color: #9c4221;
+    text-align: center;
+}
+
+.game-ticket-count strong {
+    font-size: 1.6rem;
+    line-height: 1;
+}
+
+.game-ticket-count span {
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.game-card {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #ebf8ff, #faf5ff);
+    border: 2px solid #b794f4;
+    border-radius: 16px;
+}
+
+.game-card-art {
+    display: grid;
+    width: 62px;
+    height: 62px;
+    place-items: center;
+    border-radius: 50%;
+    background: white;
+    font-size: 2rem;
+}
+
+.game-card h3 {
+    color: #44337a;
+    margin: 0 0 0.25rem;
+}
+
+.game-card p {
+    color: #718096;
+    margin: 0;
+}
+
+.bubble-game {
+    margin-top: 1rem;
+    overflow: hidden;
+    border: 3px solid #805ad5;
+    border-radius: 16px;
+    background: #f8f7ff;
+}
+
+.bubble-game-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: #805ad5;
+    color: white;
+}
+
+.bubble-game-board {
+    position: relative;
+    height: min(52vw, 390px);
+    min-height: 270px;
+    overflow: hidden;
+    background: radial-gradient(circle at 25% 20%, #e9d8fd, transparent 32%), linear-gradient(145deg, #ebf8ff, #faf5ff);
+}
+
+.game-bubble {
+    position: absolute;
+    border: 3px solid rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 25%, white 0 6%, #fbb6ce 18%, #9f7aea 72%);
+    box-shadow: 0 4px 10px rgba(128, 90, 213, 0.35);
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.game-bubble:active {
+    transform: scale(0.82);
+}
+
+.bubble-game-message {
+    margin: 0;
+    padding: 0.75rem;
+    color: #553c9a;
+    font-weight: 700;
+    text-align: center;
+}
+
 @media (max-width: 900px) {
     .kid-dashboard-top {
         grid-template-columns: 1fr;
@@ -373,6 +495,20 @@ footer {
 @media (max-width: 480px) {
     .daily-switch-grid {
         grid-template-columns: 1fr;
+    }
+
+    .fun-zone-heading,
+    .game-card {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .fun-zone-heading {
+        flex-direction: column;
+    }
+
+    .game-card-art {
+        margin: 0 auto;
     }
 }
 

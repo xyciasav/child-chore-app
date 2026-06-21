@@ -254,6 +254,7 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         "locked_badges": locked_badges,
         "pending_chores": pending_chores,
         "pending_rewards": pending_rewards,
+        "game_tickets": child.game_tickets or 0,
         "switch_reward": switch_reward,
         "switch_requirements": switch_requirements,
         "switch_ready": switch_ready,
@@ -290,6 +291,20 @@ async def submit_chore(
     await db.commit()
 
     return RedirectResponse(url="/kid", status_code=303)
+
+
+@router.post("/kid/game/start")
+async def start_game(db: AsyncSession = Depends(get_db)):
+    """Spend one approval-earned play pass to launch a game round."""
+    result = await db.execute(select(Child))
+    child = result.scalar_one_or_none()
+
+    if not child or (child.game_tickets or 0) < 1:
+        return RedirectResponse(url="/kid?tab=games", status_code=303)
+
+    child.game_tickets -= 1
+    await db.commit()
+    return RedirectResponse(url="/kid?tab=games&play=1", status_code=303)
 
 @router.post("/kid/reward/goal")
 async def set_reward_goal(

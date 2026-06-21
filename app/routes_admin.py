@@ -152,6 +152,7 @@ async def approve_chore(
     submission.status = ChoreStatus.APPROVED
     submission.reviewed_at = datetime.utcnow()
     submission.child.coins += submission.chore.coin_value
+    submission.child.game_tickets += 1
 
     await db.commit()
     return RedirectResponse(url=ADMIN_TABS["pending_chores"], status_code=303)
