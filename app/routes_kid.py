@@ -68,6 +68,16 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         {"room": room, "chores": grouped_chores}
         for room, grouped_chores in chore_groups_by_room.items()
     ]
+    daily_routine_chores = [
+        {
+            "label": label,
+            "chore": next(
+                (chore for chore in chores if matches((chore.title or "").casefold())),
+                None,
+            ),
+        }
+        for label, matches in DAILY_SWITCH_REQUIREMENTS
+    ]
 
         # Get active rewards
     rewards_result = await db.execute(
@@ -233,6 +243,7 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         "child": child,
         "chores": chores,
         "chore_groups": chore_groups,
+        "daily_routine_chores": daily_routine_chores,
         "rewards": rewards,
         "affordable_rewards": affordable_rewards,
         "almost_rewards": almost_rewards,

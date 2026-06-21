@@ -241,6 +241,141 @@ footer {
     font-weight: 600;
 }
 
+.kid-dashboard-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(230px, 300px);
+    gap: 1.5rem;
+    align-items: start;
+    margin-bottom: 1.5rem;
+}
+
+.daily-switch-tracker {
+    background: linear-gradient(135deg, #eef2ff, #fff7ed);
+    border: 2px solid #c7d2fe;
+    border-radius: 16px;
+    padding: 1.25rem;
+}
+
+.daily-switch-heading {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.daily-switch-heading h2,
+.kid-reward-summary h2 {
+    color: #2d3748;
+    margin: 0.2rem 0;
+}
+
+.daily-switch-heading p {
+    color: #4a5568;
+    margin: 0.4rem 0 0;
+}
+
+.daily-switch-eyebrow,
+.daily-task-status {
+    color: #5a67d8;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.daily-switch-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(150px, 1fr));
+    gap: 0.75rem;
+}
+
+.daily-task-card,
+.daily-switch-request-card {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border: 2px solid #cbd5e0;
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.daily-task-card h3,
+.daily-switch-request-card h3 {
+    color: #2d3748;
+    font-size: 1rem;
+    margin: 0.45rem 0;
+}
+
+.daily-task-card p,
+.daily-switch-request-card p {
+    color: #718096;
+    font-size: 0.87rem;
+    margin: 0 0 0.75rem;
+}
+
+.daily-task-card .chore-form,
+.daily-switch-request-card .reward-form {
+    margin-top: auto;
+}
+
+.daily-task-card.is-complete {
+    border-color: #48bb78;
+    background: #f0fff4;
+}
+
+.daily-task-card.is-complete .daily-task-status {
+    color: #276749;
+}
+
+.daily-switch-request-card {
+    border-color: #a0aec0;
+    background: #f7fafc;
+}
+
+.daily-switch-request-card.is-ready {
+    border-color: #ed8936;
+    background: #fffaf0;
+}
+
+.daily-switch-request-card.is-ready .daily-task-status {
+    color: #c05621;
+}
+
+.daily-switch-setup {
+    font-weight: 600;
+}
+
+.kid-reward-summary {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    padding: 1.25rem;
+    text-align: center;
+}
+
+.kid-reward-summary .coin-balance {
+    margin: 0.75rem 0;
+}
+
+.kid-reward-summary .saving-goal-card {
+    margin: 1rem 0 0;
+}
+
+@media (max-width: 900px) {
+    .kid-dashboard-top {
+        grid-template-columns: 1fr;
+    }
+
+    .daily-switch-grid {
+        grid-template-columns: repeat(2, minmax(150px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .daily-switch-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* --- Pending Items --- */
 .pending-list {
     display: flex;
