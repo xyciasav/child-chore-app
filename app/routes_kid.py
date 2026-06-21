@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from datetime import date
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select, func
@@ -10,6 +11,32 @@ from app.models import Child, Chore, ChoreSubmission, Reward, RewardRedemption, 
 from app.core import templates
 
 router = APIRouter()
+
+SWITCH_REWARD_TITLE = "request switch"
+DAILY_SWITCH_REQUIREMENTS = (
+    ("Brush teeth", lambda title: "teeth" in title),
+    ("Eat breakfast", lambda title: "breakfast" in title),
+    ("Take snack trash downstairs", lambda title: "snack" in title and "trash" in title),
+)
+
+
+def is_switch_reward(reward: Reward) -> bool:
+    """Return whether a reward is the special daily-routine Switch request."""
+    return (reward.title or "").strip().casefold() == SWITCH_REWARD_TITLE
+
+
+def daily_switch_requirements(approved_chores: list[ChoreSubmission]) -> list[dict]:
+    """Build today's approved-routine checklist for the Switch request."""
+    today = date.today()
+    today_titles = [
+        (submission.chore.title or "").casefold()
+        for submission in approved_chores
+        if submission.submitted_at and submission.submitted_at.date() == today and submission.chore
+    ]
+    return [
+        {"label": label, "complete": any(matches(title) for title in today_titles)}
+        for label, matches in DAILY_SWITCH_REQUIREMENTS
+    ]
 
 
 @router.get("/kid")
@@ -50,18 +77,21 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
     )
     rewards = rewards_result.scalars().all()
 
+    switch_reward = next((reward for reward in rewards if is_switch_reward(reward)), None)
+    standard_rewards = [reward for reward in rewards if not is_switch_reward(reward)]
+
     affordable_rewards = [
-        reward for reward in rewards
+        reward for reward in standard_rewards
         if child.coins >= reward.coin_cost
     ]
 
     almost_rewards = [
-        reward for reward in rewards
+        reward for reward in standard_rewards
         if child.coins < reward.coin_cost and reward.coin_cost - child.coins <= 25
     ]
 
     save_up_rewards = [
-        reward for reward in rewards
+        reward for reward in standard_rewards
         if child.coins < reward.coin_cost and reward.coin_cost - child.coins > 25
     ]
 
@@ -91,6 +121,8 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         .options(selectinload(ChoreSubmission.chore))
     )
     approved_chores = approved_chores_result.scalars().all()
+    switch_requirements = daily_switch_requirements(approved_chores)
+    switch_ready = bool(switch_reward) and all(item["complete"] for item in switch_requirements)
 
     approved_chore_count = len(approved_chores)
     bathroom_count = sum(
@@ -211,6 +243,9 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         "locked_badges": locked_badges,
         "pending_chores": pending_chores,
         "pending_rewards": pending_rewards,
+        "switch_reward": switch_reward,
+        "switch_requirements": switch_requirements,
+        "switch_ready": switch_ready,
     })
 
 
@@ -294,8 +329,17 @@ async def request_reward(
     if not reward:
         return RedirectResponse(url="/kid", status_code=303)
 
-    # Check if child has enough coins
-    if child.coins < reward.coin_cost:
+    if is_switch_reward(reward):
+        approved_result = await db.execute(
+            select(ChoreSubmission)
+            .where(ChoreSubmission.child_id == child.id)
+            .where(ChoreSubmission.status == ChoreStatus.APPROVED)
+            .options(selectinload(ChoreSubmission.chore))
+        )
+        if not all(item["complete"] for item in daily_switch_requirements(approved_result.scalars().all())):
+            return RedirectResponse(url="/kid?tab=rewards", status_code=303)
+    # Standard rewards require enough coins. The Switch request is always free.
+    elif child.coins < reward.coin_cost:
         return RedirectResponse(url="/kid", status_code=303)
 
     # Create redemption request

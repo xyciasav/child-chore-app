@@ -208,7 +208,9 @@ async def approve_reward(
 
     redemption.status = RewardRedemptionStatus.APPROVED
     redemption.reviewed_at = datetime.utcnow()
-    redemption.child.coins -= redemption.reward.coin_cost
+    # The daily Switch request is earned through its routine, never paid with coins.
+    if (redemption.reward.title or "").strip().casefold() != "request switch":
+        redemption.child.coins -= redemption.reward.coin_cost
 
     await db.commit()
     return RedirectResponse(url=ADMIN_TABS["pending_rewards"], status_code=303)
@@ -558,6 +560,27 @@ async def reset_all_coins(
         child.coins = 0.0
 
     await db.commit()
+    return RedirectResponse(url=ADMIN_TABS["children"], status_code=303)
+
+
+@router.post("/admin/coins/award")
+async def award_coins(
+    request: Request,
+    child_id: int = Form(...),
+    amount: float = Form(...),
+    db: AsyncSession = Depends(get_db)
+):
+    """Give a child bonus coins for something outside the chore list."""
+    redirect = check_admin_cookie(request)
+    if redirect:
+        return redirect
+
+    child_result = await db.execute(select(Child).where(Child.id == child_id))
+    child = child_result.scalar_one_or_none()
+    if child and amount > 0:
+        child.coins += amount
+        await db.commit()
+
     return RedirectResponse(url=ADMIN_TABS["children"], status_code=303)
 
 @router.post("/admin/logout")

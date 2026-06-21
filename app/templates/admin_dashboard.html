@@ -177,7 +177,11 @@
                 <div class="approval-info">
                     <strong>{{ redemption.child.name }}</strong> wants 
                     <strong>{{ redemption.reward.title }}</strong>
+                    {% if redemption.reward.title|trim|lower == 'request switch' %}
+                    <span class="coin-value">Daily routine — no coins</span>
+                    {% else %}
                     <span class="coin-value">(-{{ redemption.reward.coin_cost|int }} 🪙)</span>
+                    {% endif %}
                 </div>
                 <div class="approval-actions">
                     <form action="/admin/reward/approve" method="post" class="inline-form">
@@ -308,6 +312,29 @@
                 </div>
             </div>
             {% endfor %}
+        </div>
+        <div class="admin-form-box">
+            <h3>Give Bonus Coins</h3>
+            <p>Use this for helpful things that are worth a reward but are not on the chore list.</p>
+            {% if children %}
+            <form action="/admin/coins/award" method="post" class="admin-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bonus-child">Child:</label>
+                        <select id="bonus-child" name="child_id" required>
+                            {% for child in children %}
+                            <option value="{{ child.id }}">{{ child.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="bonus-amount">Coins to give:</label>
+                        <input type="number" id="bonus-amount" name="amount" min="1" step="1" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success">Give Coins</button>
+            </form>
+            {% endif %}
         </div>
     </div>
     <div class="admin-form-box">

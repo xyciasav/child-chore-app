@@ -139,6 +139,29 @@
         <section class="section">
             <h2>Rewards 🎁</h2>
 
+            {% if switch_reward %}
+            <h3 class="reward-tier-heading">Daily Switch Request</h3>
+            <div class="reward-grid">
+                <div class="reward-card {% if switch_ready %}reward-card-ready{% else %}reward-card-locked{% endif %}">
+                    <h3>{{ switch_reward.title }}</h3>
+                    <p class="reward-description">Complete today's routine to unlock this. It does not use coins.</p>
+                    <ul class="daily-requirements">
+                        {% for requirement in switch_requirements %}
+                        <li class="{% if requirement.complete %}is-complete{% endif %}">
+                            {% if requirement.complete %}✓{% else %}○{% endif %} {{ requirement.label }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <form action="/kid/reward/request" method="post" class="reward-form">
+                        <input type="hidden" name="reward_id" value="{{ switch_reward.id }}">
+                        <button type="submit" class="btn btn-secondary" {% if not switch_ready %}disabled{% endif %}>
+                            {% if switch_ready %}Request Switch{% else %}Complete Today's Routine{% endif %}
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
             {% if affordable_rewards %}
             <h3 class="reward-tier-heading">Ready Now ✨</h3>
             <div class="reward-grid">

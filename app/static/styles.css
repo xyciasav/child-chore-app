@@ -221,6 +221,26 @@ footer {
     margin-bottom: 1rem;
 }
 
+.reward-card-locked {
+    border-color: #a0aec0;
+}
+
+.daily-requirements {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+    color: #718096;
+}
+
+.daily-requirements li {
+    margin: 0.35rem 0;
+}
+
+.daily-requirements .is-complete {
+    color: #276749;
+    font-weight: 600;
+}
+
 /* --- Pending Items --- */
 .pending-list {
     display: flex;
@@ -998,4 +1018,22 @@ footer {
     opacity: 0.45;
     border-color: #cbd5e0;
     filter: grayscale(1);
+}
+
+.reward-tier-heading {
+    margin: 1.5rem 0 0.75rem;
+    color: #2d3748;
+    font-size: 1.1rem;
+}
+
+.reward-card-ready {
+    border-color: #48bb78;
+    box-shadow: 0 4px 18px rgba(72, 187, 120, 0.18);
+}
+
+.reward-needed {
+    color: #718096;
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
 }
