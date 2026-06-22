@@ -331,7 +331,7 @@
                 </form>
             </div>
 
-            <div id="treasure-game" class="treasure-game" {% if request.query_params.get('play') != '1' %}hidden{% endif %}>
+            <div id="treasure-game" class="treasure-game" {% if not play_game %}hidden{% endif %}>
                 <div class="treasure-game-header">
                     <span>Treasure Dash</span>
                     <strong><span id="treasure-score">0</span> gems</strong>
@@ -412,6 +412,40 @@ if (initialKidTab === 'rewards') {
 } else if (initialKidTab === 'games') {
     activateKidTab('kid-games', false);
 }
+
+const kidDashboardState = {
+    coins: Number({{ child.coins|int }}),
+    tickets: Number({{ game_tickets }}),
+    pendingChores: Number({{ pending_chores|length }}),
+    pendingRewards: Number({{ pending_rewards|length }}),
+};
+
+async function refreshKidDashboardWhenChanged() {
+    const activeTab = document.querySelector('.kid-tab-btn.active')?.dataset.kidTab;
+    // Never interrupt a game in progress with a page refresh.
+    if (activeTab === 'kid-games') return;
+
+    try {
+        const response = await fetch('/api/summary', { cache: 'no-store' });
+        if (!response.ok) return;
+        const summary = await response.json();
+        const child = summary.child || {};
+        const changed = (
+            Number(child.coins || 0) !== kidDashboardState.coins
+            || Number(child.game_tickets || 0) !== kidDashboardState.tickets
+            || Number(summary.pending_approvals?.chores || 0) !== kidDashboardState.pendingChores
+            || Number(summary.pending_approvals?.rewards || 0) !== kidDashboardState.pendingRewards
+        );
+        if (changed) window.location.reload();
+    } catch (_) {
+        // The dashboard remains usable if a background update check fails.
+    }
+}
+
+window.setInterval(refreshKidDashboardWhenChanged, 10000);
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refreshKidDashboardWhenChanged();
+});
 
 const treasureGame = document.getElementById('treasure-game');
 const treasureBoard = document.getElementById('treasure-game-board');

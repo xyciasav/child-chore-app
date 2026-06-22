@@ -69,6 +69,12 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         await db.commit()
         await db.refresh(child)
 
+    play_game = request.query_params.get("play") == "1" and bool(child.game_round_ready)
+    if play_game:
+        # A launch is consumed by the first page render, so refreshes cannot replay it.
+        child.game_round_ready = False
+        await db.commit()
+
     # Get active chores
     chores_result = await db.execute(
         select(Chore)
@@ -291,6 +297,7 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         "pending_rewards": pending_rewards,
         "game_tickets": child.game_tickets or 0,
         "treasure_high_score": child.treasure_high_score or 0,
+        "play_game": play_game,
         "switch_reward": switch_reward,
         "switch_requirements": switch_requirements,
         "switch_ready": switch_ready,
@@ -341,6 +348,7 @@ async def start_game(db: AsyncSession = Depends(get_db)):
         return RedirectResponse(url="/kid?tab=games", status_code=303)
 
     child.game_tickets -= 1
+    child.game_round_ready = True
     await db.commit()
     return RedirectResponse(url="/kid?tab=games&play=1", status_code=303)
 

@@ -221,6 +221,7 @@ async def get_summary(db: AsyncSession = Depends(get_db)):
         "child": {
             "name": child.name if child else "No child",
             "coins": child.coins if child else 0,
+            "game_tickets": child.game_tickets if child else 0,
         } if child else None,
         "pending_approvals": {
             "chores": pending_chore_count,
