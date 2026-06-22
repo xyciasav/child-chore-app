@@ -335,6 +335,7 @@
                     <span>Treasure Dash</span>
                     <strong><span id="treasure-score">0</span> gems</strong>
                     <strong id="treasure-hearts" aria-label="3 hearts">❤️❤️❤️</strong>
+                    <strong id="treasure-powerup" class="treasure-powerup" hidden>⭐ Slime frozen!</strong>
                     <strong><span id="treasure-time">45</span>s</strong>
                 </div>
                 <div id="treasure-game-board" class="treasure-game-board" aria-label="Treasure Dash game board"></div>
@@ -416,6 +417,7 @@ const treasureBoard = document.getElementById('treasure-game-board');
 const treasureScore = document.getElementById('treasure-score');
 const treasureTime = document.getElementById('treasure-time');
 const treasureHearts = document.getElementById('treasure-hearts');
+const treasurePowerup = document.getElementById('treasure-powerup');
 const treasureMessage = document.getElementById('treasure-game-message');
 
 function startTreasureDash() {
@@ -448,6 +450,7 @@ function startTreasureDash() {
     treasureScore.textContent = score;
     treasureTime.textContent = timeLeft;
     treasureHearts.textContent = '❤️'.repeat(hearts);
+    treasurePowerup.hidden = true;
     treasureMessage.textContent = 'Swipe or use the arrows to start collecting gems!';
     treasureBoard.replaceChildren();
 
@@ -535,6 +538,8 @@ function startTreasureDash() {
         if (freezeStar && sameSpot(player, freezeStar)) {
             freezeStar = null;
             slimeFrozenUntil = Date.now() + 5000;
+            treasurePowerup.hidden = false;
+            treasurePowerup.textContent = '⭐ Slime frozen: 5s';
             treasureMessage.textContent = 'Freeze star! The slime is stuck for 5 seconds.';
         }
         if (sameSpot(player, slime)) slimeCaughtYou();
@@ -542,7 +547,12 @@ function startTreasureDash() {
     };
     const moveSlime = () => {
         if (gameOver) return;
-        if (Date.now() < slimeFrozenUntil) return;
+        if (Date.now() < slimeFrozenUntil) {
+            treasurePowerup.hidden = false;
+            treasurePowerup.textContent = `⭐ Slime frozen: ${Math.ceil((slimeFrozenUntil - Date.now()) / 1000)}s`;
+            return;
+        }
+        treasurePowerup.hidden = true;
         const options = [
             { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 },
         ].filter(step => {

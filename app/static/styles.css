@@ -499,6 +499,15 @@ footer {
     transition: left 0.16s ease, top 0.16s ease, transform 0.16s ease;
 }
 
+.treasure-token[hidden] {
+    display: none;
+}
+
+.treasure-powerup {
+    color: #fefcbf;
+    text-shadow: 0 1px 4px rgba(45, 55, 72, 0.75);
+}
+
 .treasure-player {
     background: #fefcbf;
     border: 3px solid #d69e2e;
