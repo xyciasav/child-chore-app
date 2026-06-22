@@ -449,49 +449,107 @@ footer {
     margin: 0;
 }
 
-.bubble-game {
+.treasure-game {
     margin-top: 1rem;
     overflow: hidden;
-    border: 3px solid #805ad5;
+    border: 3px solid #2f855a;
     border-radius: 16px;
-    background: #f8f7ff;
+    background: #f0fff4;
 }
 
-.bubble-game-header {
+.treasure-game-header {
     display: flex;
     justify-content: space-between;
     gap: 0.5rem;
     padding: 0.75rem 1rem;
-    background: #805ad5;
+    background: #276749;
     color: white;
 }
 
-.bubble-game-board {
+.treasure-game-board {
     position: relative;
-    height: min(52vw, 390px);
-    min-height: 270px;
+    height: min(62vw, 420px);
+    min-height: 300px;
     overflow: hidden;
-    background: radial-gradient(circle at 25% 20%, #e9d8fd, transparent 32%), linear-gradient(145deg, #ebf8ff, #faf5ff);
+    touch-action: none;
+    background-color: #c6f6d5;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.45) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.45) 1px, transparent 1px),
+        radial-gradient(circle at 18% 12%, #fefcbf 0 4%, transparent 4.4%),
+        radial-gradient(circle at 78% 70%, #9ae6b4 0 7%, transparent 7.4%);
+    background-size: calc(100% / 7) calc(100% / 7), calc(100% / 7) calc(100% / 7), auto, auto;
 }
 
-.game-bubble {
+.treasure-token {
     position: absolute;
-    border: 3px solid rgba(255, 255, 255, 0.9);
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 25%, white 0 6%, #fbb6ce 18%, #9f7aea 72%);
-    box-shadow: 0 4px 10px rgba(128, 90, 213, 0.35);
-    cursor: pointer;
+    z-index: 1;
+    display: grid;
+    width: 11.5%;
+    aspect-ratio: 1;
+    place-items: center;
+    font-size: clamp(1.5rem, 5vw, 2.6rem);
+    transform: translate(-50%, -50%);
+    transition: left 0.16s ease, top 0.16s ease, transform 0.16s ease;
+}
+
+.treasure-player {
+    filter: drop-shadow(0 3px 2px rgba(45, 55, 72, 0.28));
+}
+
+.treasure-slime {
+    filter: drop-shadow(0 3px 2px rgba(39, 103, 73, 0.3));
+}
+
+.treasure-gem {
+    animation: treasure-gem-glow 0.75s ease-in-out infinite alternate;
+}
+
+@keyframes treasure-gem-glow {
+    from { transform: translate(-50%, -50%) scale(0.9) rotate(-8deg); }
+    to { transform: translate(-50%, -50%) scale(1.08) rotate(8deg); }
+}
+
+.treasure-controls {
+    display: grid;
+    grid-template-columns: repeat(3, 54px);
+    grid-template-areas:
+        '. up .'
+        'left down right';
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.75rem;
+}
+
+.treasure-controls button {
+    height: 48px;
+    border: 0;
+    border-radius: 10px;
+    background: #48bb78;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 800;
     touch-action: manipulation;
 }
 
-.game-bubble:active {
-    transform: scale(0.82);
+.treasure-controls button:active {
+    background: #276749;
+    transform: scale(0.94);
 }
 
-.bubble-game-message {
+.treasure-controls button[data-move="up"] { grid-area: up; }
+.treasure-controls button[data-move="left"] { grid-area: left; }
+.treasure-controls button[data-move="down"] { grid-area: down; }
+.treasure-controls button[data-move="right"] { grid-area: right; }
+
+.treasure-controls button:disabled {
+    opacity: 0.45;
+}
+
+.treasure-game-message {
     margin: 0;
     padding: 0.75rem;
-    color: #553c9a;
+    color: #276749;
     font-weight: 700;
     text-align: center;
 }

@@ -314,10 +314,10 @@
             </div>
 
             <div class="game-card">
-                <div class="game-card-art" aria-hidden="true">🫧</div>
+                <div class="game-card-art" aria-hidden="true">💎</div>
                 <div>
-                    <h3>Bubble Blitz</h3>
-                    <p>Pop as many bubbles as you can in 30 seconds.</p>
+                    <h3>Treasure Dash</h3>
+                    <p>Collect gems, dodge the slime, and beat the 45-second clock.</p>
                 </div>
                 <form action="/kid/game/start" method="post" class="game-start-form">
                     <button type="submit" class="btn btn-primary" {% if not game_tickets %}disabled{% endif %}>
@@ -326,14 +326,20 @@
                 </form>
             </div>
 
-            <div id="bubble-game" class="bubble-game" {% if request.query_params.get('play') != '1' %}hidden{% endif %}>
-                <div class="bubble-game-header">
-                    <span>Bubble Blitz</span>
-                    <strong><span id="bubble-score">0</span> pops</strong>
-                    <strong><span id="bubble-time">30</span>s</strong>
+            <div id="treasure-game" class="treasure-game" {% if request.query_params.get('play') != '1' %}hidden{% endif %}>
+                <div class="treasure-game-header">
+                    <span>Treasure Dash</span>
+                    <strong><span id="treasure-score">0</span> gems</strong>
+                    <strong><span id="treasure-time">45</span>s</strong>
                 </div>
-                <div id="bubble-game-board" class="bubble-game-board" aria-label="Bubble Blitz game board"></div>
-                <p id="bubble-game-message" class="bubble-game-message">Tap the bubbles!</p>
+                <div id="treasure-game-board" class="treasure-game-board" aria-label="Treasure Dash game board"></div>
+                <div class="treasure-controls" aria-label="Treasure Dash movement controls">
+                    <button type="button" data-move="up" aria-label="Move up">▲</button>
+                    <button type="button" data-move="left" aria-label="Move left">◀</button>
+                    <button type="button" data-move="down" aria-label="Move down">▼</button>
+                    <button type="button" data-move="right" aria-label="Move right">▶</button>
+                </div>
+                <p id="treasure-game-message" class="treasure-game-message">Swipe or use the arrows to start collecting gems!</p>
             </div>
         </section>
     </div>
@@ -400,14 +406,14 @@ if (initialKidTab === 'rewards') {
     activateKidTab('kid-games', false);
 }
 
-const bubbleGame = document.getElementById('bubble-game');
-const bubbleBoard = document.getElementById('bubble-game-board');
-const bubbleScore = document.getElementById('bubble-score');
-const bubbleTime = document.getElementById('bubble-time');
-const bubbleMessage = document.getElementById('bubble-game-message');
+const treasureGame = document.getElementById('treasure-game');
+const treasureBoard = document.getElementById('treasure-game-board');
+const treasureScore = document.getElementById('treasure-score');
+const treasureTime = document.getElementById('treasure-time');
+const treasureMessage = document.getElementById('treasure-game-message');
 
-function startBubbleGame() {
-    if (!bubbleGame || bubbleGame.hidden || !bubbleBoard) {
+function startTreasureDash() {
+    if (!treasureGame || treasureGame.hidden || !treasureBoard) {
         return;
     }
 
@@ -415,49 +421,135 @@ function startBubbleGame() {
     gameUrl.searchParams.delete('play');
     window.history.replaceState({}, '', gameUrl);
 
+    const boardSize = 7;
     let score = 0;
-    let timeLeft = 30;
+    let timeLeft = 45;
     let gameOver = false;
-    bubbleScore.textContent = score;
-    bubbleTime.textContent = timeLeft;
-    bubbleMessage.textContent = 'Tap the bubbles!';
-    bubbleBoard.replaceChildren();
+    let player = { x: 0, y: 6 };
+    let slime = { x: 6, y: 0 };
+    let gem = { x: 3, y: 3 };
+    let touchStart = null;
 
-    const addBubble = () => {
+    treasureScore.textContent = score;
+    treasureTime.textContent = timeLeft;
+    treasureMessage.textContent = 'Swipe or use the arrows to start collecting gems!';
+    treasureBoard.replaceChildren();
+
+    const playerToken = document.createElement('span');
+    playerToken.className = 'treasure-token treasure-player';
+    playerToken.textContent = '🧭';
+    const slimeToken = document.createElement('span');
+    slimeToken.className = 'treasure-token treasure-slime';
+    slimeToken.textContent = '🟢';
+    const gemToken = document.createElement('span');
+    gemToken.className = 'treasure-token treasure-gem';
+    gemToken.textContent = '💎';
+    treasureBoard.append(playerToken, slimeToken, gemToken);
+
+    const sameSpot = (first, second) => first.x === second.x && first.y === second.y;
+    const placeToken = (token, position) => {
+        token.style.left = `${((position.x + 0.5) / boardSize) * 100}%`;
+        token.style.top = `${((position.y + 0.5) / boardSize) * 100}%`;
+    };
+    const randomOpenSpot = () => {
+        let next;
+        do {
+            next = {
+                x: Math.floor(Math.random() * boardSize),
+                y: Math.floor(Math.random() * boardSize),
+            };
+        } while (sameSpot(next, player) || sameSpot(next, slime));
+        return next;
+    };
+    const renderBoard = () => {
+        placeToken(playerToken, player);
+        placeToken(slimeToken, slime);
+        placeToken(gemToken, gem);
+    };
+    const slimeCaughtYou = () => {
+        score = Math.max(0, score - 1);
+        treasureScore.textContent = score;
+        treasureMessage.textContent = 'Slime got you! One gem slipped away.';
+        player = { x: 0, y: 6 };
+        slime = randomOpenSpot();
+    };
+    const movePlayer = (xStep, yStep) => {
         if (gameOver) return;
-        const bubble = document.createElement('button');
-        bubble.type = 'button';
-        bubble.className = 'game-bubble';
-        const size = 42 + Math.floor(Math.random() * 42);
-        bubble.style.width = `${size}px`;
-        bubble.style.height = `${size}px`;
-        bubble.style.left = `${Math.random() * 78 + 4}%`;
-        bubble.style.top = `${Math.random() * 70 + 8}%`;
-        bubble.addEventListener('click', () => {
-            if (gameOver) return;
+        const next = { x: player.x + xStep, y: player.y + yStep };
+        if (next.x < 0 || next.x >= boardSize || next.y < 0 || next.y >= boardSize) return;
+        player = next;
+        if (sameSpot(player, gem)) {
             score += 1;
-            bubbleScore.textContent = score;
-            bubble.remove();
-            addBubble();
-        }, { once: true });
-        bubbleBoard.appendChild(bubble);
+            treasureScore.textContent = score;
+            treasureMessage.textContent = 'Gem found! Keep going!';
+            gem = randomOpenSpot();
+        }
+        if (sameSpot(player, slime)) slimeCaughtYou();
+        renderBoard();
+    };
+    const moveSlime = () => {
+        if (gameOver) return;
+        const options = [
+            { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 },
+        ].filter(step => {
+            const next = { x: slime.x + step.x, y: slime.y + step.y };
+            return next.x >= 0 && next.x < boardSize && next.y >= 0 && next.y < boardSize;
+        });
+        options.sort((first, second) => {
+            const firstDistance = Math.abs(slime.x + first.x - player.x) + Math.abs(slime.y + first.y - player.y);
+            const secondDistance = Math.abs(slime.x + second.x - player.x) + Math.abs(slime.y + second.y - player.y);
+            return firstDistance - secondDistance + (Math.random() - 0.5) * 2;
+        });
+        const step = options[0];
+        slime = { x: slime.x + step.x, y: slime.y + step.y };
+        if (sameSpot(slime, player)) slimeCaughtYou();
+        renderBoard();
+    };
+    const finishGame = () => {
+        gameOver = true;
+        window.clearInterval(timer);
+        window.clearInterval(slimeTimer);
+        treasureMessage.textContent = `Treasure secured: ${score} gem${score === 1 ? '' : 's'}!`;
+        document.querySelectorAll('.treasure-controls button').forEach(button => button.disabled = true);
     };
 
-    for (let index = 0; index < 5; index += 1) addBubble();
+    const moveMap = {
+        up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0],
+    };
+    document.querySelectorAll('.treasure-controls button').forEach(button => {
+        button.disabled = false;
+        button.onclick = () => movePlayer(...moveMap[button.dataset.move]);
+    });
+    treasureBoard.ontouchstart = event => {
+        const touch = event.changedTouches[0];
+        touchStart = { x: touch.clientX, y: touch.clientY };
+    };
+    treasureBoard.ontouchend = event => {
+        if (!touchStart) return;
+        const touch = event.changedTouches[0];
+        const xDistance = touch.clientX - touchStart.x;
+        const yDistance = touch.clientY - touchStart.y;
+        touchStart = null;
+        if (Math.max(Math.abs(xDistance), Math.abs(yDistance)) < 20) return;
+        if (Math.abs(xDistance) > Math.abs(yDistance)) {
+            movePlayer(xDistance > 0 ? 1 : -1, 0);
+        } else {
+            movePlayer(0, yDistance > 0 ? 1 : -1);
+        }
+    };
 
+    renderBoard();
+    const slimeTimer = window.setInterval(moveSlime, 720);
     const timer = window.setInterval(() => {
         timeLeft -= 1;
-        bubbleTime.textContent = timeLeft;
+        treasureTime.textContent = timeLeft;
         if (timeLeft <= 0) {
-            gameOver = true;
-            window.clearInterval(timer);
-            bubbleBoard.replaceChildren();
-            bubbleMessage.textContent = `Great popping! You got ${score} bubbles.`;
+            finishGame();
         }
     }, 1000);
 }
 
-startBubbleGame();
+startTreasureDash();
 
 function openConfirmModal({ title, message, buttonText, form, actionType }) {
     pendingForm = form;
