@@ -152,7 +152,7 @@ footer {
 /* --- Kid Tabs --- */
 .kid-tabs {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
     background: white;
     border-radius: 8px;
@@ -338,6 +338,20 @@ footer {
 
 .daily-switch-request-card.is-ready .daily-task-status {
     color: #c05621;
+}
+
+.daily-switch-request-card.is-requested {
+    border-color: #a0aec0;
+    background: #edf2f7;
+    filter: grayscale(0.45);
+}
+
+.daily-switch-request-card.is-requested .daily-task-status {
+    color: #4a5568;
+}
+
+.kid-tabs-top {
+    margin: 0 0 1.25rem;
 }
 
 .daily-switch-setup {

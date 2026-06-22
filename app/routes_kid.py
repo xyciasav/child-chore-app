@@ -1,5 +1,6 @@
 from collections import OrderedDict
-from datetime import date
+from datetime import datetime, time
+from zoneinfo import ZoneInfo
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select, func
@@ -13,6 +14,8 @@ from app.core import templates
 router = APIRouter()
 
 SWITCH_REWARD_TITLE = "request switch"
+PACIFIC_TIMEZONE = ZoneInfo("America/Los_Angeles")
+SWITCH_AVAILABLE_TIME = time(hour=9)
 DAILY_SWITCH_REQUIREMENTS = (
     ("Brush teeth", lambda title: "teeth" in title),
     ("Eat breakfast", lambda title: "breakfast" in title),
@@ -27,12 +30,17 @@ def is_switch_reward(reward: Reward) -> bool:
 
 def daily_switch_requirements(approved_chores: list[ChoreSubmission]) -> list[dict]:
     """Build today's approved-routine checklist for the Switch request."""
-    today = date.today()
+    today = datetime.now(PACIFIC_TIMEZONE).date()
     today_titles = [
         (submission.chore.title or "").casefold()
         for submission in approved_chores
         if submission.submitted_at and submission.submitted_at.date() == today and submission.chore
     ]
+
+
+def switch_is_available_now() -> bool:
+    """Keep Switch requests unavailable before 9:00 AM Pacific time."""
+    return datetime.now(PACIFIC_TIMEZONE).time() >= SWITCH_AVAILABLE_TIME
     return [
         {"label": label, "complete": any(matches(title) for title in today_titles)}
         for label, matches in DAILY_SWITCH_REQUIREMENTS
@@ -122,6 +130,10 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         .options(selectinload(RewardRedemption.reward))
     )
     pending_rewards = pending_rewards_result.scalars().all()
+    switch_requested = any(
+        redemption.reward and is_switch_reward(redemption.reward)
+        for redemption in pending_rewards
+    )
 
         # Build automatic badges from approved chores and current coins
     approved_chores_result = await db.execute(
@@ -132,7 +144,13 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
     )
     approved_chores = approved_chores_result.scalars().all()
     switch_requirements = daily_switch_requirements(approved_chores)
-    switch_ready = bool(switch_reward) and all(item["complete"] for item in switch_requirements)
+    switch_available = switch_is_available_now()
+    switch_ready = (
+        bool(switch_reward)
+        and switch_available
+        and not switch_requested
+        and all(item["complete"] for item in switch_requirements)
+    )
 
     approved_chore_count = len(approved_chores)
     bathroom_count = sum(
@@ -258,6 +276,8 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         "switch_reward": switch_reward,
         "switch_requirements": switch_requirements,
         "switch_ready": switch_ready,
+        "switch_requested": switch_requested,
+        "switch_available": switch_available,
     })
 
 
@@ -356,6 +376,19 @@ async def request_reward(
         return RedirectResponse(url="/kid", status_code=303)
 
     if is_switch_reward(reward):
+        if not switch_is_available_now():
+            return RedirectResponse(url="/kid", status_code=303)
+
+        existing_request_result = await db.execute(
+            select(RewardRedemption.id)
+            .where(RewardRedemption.child_id == child.id)
+            .where(RewardRedemption.reward_id == reward.id)
+            .where(RewardRedemption.status == RewardRedemptionStatus.PENDING)
+            .limit(1)
+        )
+        if existing_request_result.scalar_one_or_none() is not None:
+            return RedirectResponse(url="/kid", status_code=303)
+
         approved_result = await db.execute(
             select(ChoreSubmission)
             .where(ChoreSubmission.child_id == child.id)

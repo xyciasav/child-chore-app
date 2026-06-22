@@ -5,6 +5,13 @@
 
 {% block content %}
 <div class="container">
+    <nav class="kid-tabs kid-tabs-top" aria-label="Kid dashboard tabs">
+        <button type="button" class="kid-tab-btn active" data-kid-tab="kid-chores">Chores</button>
+        <button type="button" class="kid-tab-btn" data-kid-tab="kid-rewards">Rewards</button>
+        <button type="button" class="kid-tab-btn" data-kid-tab="kid-games">Fun Zone {% if game_tickets %}({{ game_tickets }}){% endif %}</button>
+    </nav>
+
+    <div id="kid-chores" class="kid-tab-content active">
     <div class="kid-dashboard-top">
         <section class="daily-switch-tracker" aria-labelledby="daily-switch-heading">
             <div class="daily-switch-heading">
@@ -33,15 +40,15 @@
                 </article>
                 {% endfor %}
 
-                <article class="daily-switch-request-card {% if switch_ready %}is-ready{% endif %}">
-                    <span class="daily-task-status">{% if switch_ready %}Ready!{% else %}Locked{% endif %}</span>
+                <article class="daily-switch-request-card {% if switch_ready %}is-ready{% elif switch_requested %}is-requested{% endif %}">
+                    <span class="daily-task-status">{% if switch_requested %}Requested{% elif switch_ready %}Ready!{% elif not switch_available %}Available at 9 AM{% else %}Locked{% endif %}</span>
                     <h3>Request Switch</h3>
                     <p>This is earned by today's routine, not by spending coins.</p>
                     {% if switch_reward %}
                     <form action="/kid/reward/request" method="post" class="reward-form">
                         <input type="hidden" name="reward_id" value="{{ switch_reward.id }}">
                         <button type="submit" class="btn btn-secondary" {% if not switch_ready %}disabled{% endif %}>
-                            {% if switch_ready %}Request Switch{% else %}Finish Today's Routine{% endif %}
+                            {% if switch_requested %}Switch Requested{% elif switch_ready %}Request Switch{% elif not switch_available %}Available at 9:00 AM{% else %}Finish Today's Routine{% endif %}
                         </button>
                     </form>
                     {% else %}
@@ -110,13 +117,6 @@
         </div>
     </section>
 
-    <nav class="kid-tabs" aria-label="Kid dashboard tabs">
-        <button type="button" class="kid-tab-btn active" data-kid-tab="kid-chores">Chores</button>
-        <button type="button" class="kid-tab-btn" data-kid-tab="kid-rewards">Rewards</button>
-        <button type="button" class="kid-tab-btn" data-kid-tab="kid-games">Fun Zone {% if game_tickets %}({{ game_tickets }}){% endif %}</button>
-    </nav>
-
-    <div id="kid-chores" class="kid-tab-content active">
     <!-- Random Chore Spinner -->
     <section class="section">
         <div class="spinner-box">
