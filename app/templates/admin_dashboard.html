@@ -309,6 +309,7 @@
                 <div class="manage-info">
                     <strong>{{ child.name }}</strong>
                     <span class="coin-value">{{ child.coins|int }} 🪙</span>
+                    <span class="room-badge">{{ child.game_tickets }} play pass{% if child.game_tickets != 1 %}es{% endif %}</span>
                 </div>
                 <div class="manage-actions">
                     <form action="/admin/coins/set" method="post" class="inline-form">
@@ -349,6 +350,29 @@
                     </div>
                 </div>
                 <button type="submit" class="btn btn-success">Give Coins</button>
+            </form>
+            {% endif %}
+        </div>
+        <div class="admin-form-box">
+            <h3>Give Play Passes</h3>
+            <p>Give game tickets directly for a bonus or a special occasion.</p>
+            {% if children %}
+            <form action="/admin/tickets/award" method="post" class="admin-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ticket-child">Child:</label>
+                        <select id="ticket-child" name="child_id" required>
+                            {% for child in children %}
+                            <option value="{{ child.id }}">{{ child.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="ticket-amount">Play passes to give:</label>
+                        <input type="number" id="ticket-amount" name="amount" min="1" step="1" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success">Give Play Passes</button>
             </form>
             {% endif %}
         </div>
