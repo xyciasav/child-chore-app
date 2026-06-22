@@ -4,10 +4,11 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from app.database import get_db
 from app.models import (
-    Child, Chore, ChoreSubmission, Reward, RewardRedemption,
+    Child, Chore, ChoreSubmission, DailyRoutineReset, Reward, RewardRedemption,
     ChoreStatus, RewardRedemptionStatus
 )
 from app.core import templates
@@ -582,6 +583,94 @@ async def award_coins(
         child.coins += amount
         await db.commit()
 
+    return RedirectResponse(url=ADMIN_TABS["children"], status_code=303)
+
+
+@router.post("/admin/coins/set")
+async def set_child_coins(
+    request: Request,
+    child_id: int = Form(...),
+    amount: float = Form(...),
+    db: AsyncSession = Depends(get_db)
+):
+    """Set one child's coin balance to an exact amount."""
+    redirect = check_admin_cookie(request)
+    if redirect:
+        return redirect
+
+    child_result = await db.execute(select(Child).where(Child.id == child_id))
+    child = child_result.scalar_one_or_none()
+    if child:
+        child.coins = max(0, amount)
+        await db.commit()
+
+    return RedirectResponse(url=ADMIN_TABS["children"], status_code=303)
+
+
+@router.post("/admin/coins/reset-child")
+async def reset_child_coins(
+    request: Request,
+    child_id: int = Form(...),
+    db: AsyncSession = Depends(get_db)
+):
+    """Reset one child's coin balance to zero."""
+    redirect = check_admin_cookie(request)
+    if redirect:
+        return redirect
+
+    child_result = await db.execute(select(Child).where(Child.id == child_id))
+    child = child_result.scalar_one_or_none()
+    if child:
+        child.coins = 0.0
+        await db.commit()
+
+    return RedirectResponse(url=ADMIN_TABS["children"], status_code=303)
+
+
+@router.post("/admin/daily-routine/reset")
+async def reset_daily_routine(
+    request: Request,
+    child_id: int = Form(...),
+    db: AsyncSession = Depends(get_db)
+):
+    """Require the child's Switch routine to be completed again today."""
+    redirect = check_admin_cookie(request)
+    if redirect:
+        return redirect
+
+    child_result = await db.execute(select(Child).where(Child.id == child_id))
+    child = child_result.scalar_one_or_none()
+    if not child:
+        return RedirectResponse(url=ADMIN_TABS["children"], status_code=303)
+
+    today = datetime.now(ZoneInfo("America/Los_Angeles")).date()
+    reset_result = await db.execute(
+        select(DailyRoutineReset)
+        .where(DailyRoutineReset.child_id == child.id)
+        .where(DailyRoutineReset.routine_date == today)
+    )
+    daily_reset = reset_result.scalar_one_or_none()
+    if daily_reset:
+        daily_reset.reset_at = datetime.utcnow()
+    else:
+        db.add(DailyRoutineReset(
+            child_id=child.id,
+            routine_date=today,
+            reset_at=datetime.utcnow(),
+        ))
+
+    pending_rewards_result = await db.execute(
+        select(RewardRedemption)
+        .where(RewardRedemption.child_id == child.id)
+        .where(RewardRedemption.status == RewardRedemptionStatus.PENDING)
+        .options(selectinload(RewardRedemption.reward))
+    )
+    for redemption in pending_rewards_result.scalars().all():
+        if (redemption.reward.title or "").strip().casefold() == "request switch":
+            redemption.status = RewardRedemptionStatus.DENIED
+            redemption.reviewed_at = datetime.utcnow()
+
+    await db.commit()
     return RedirectResponse(url=ADMIN_TABS["children"], status_code=303)
 
 @router.post("/admin/logout")

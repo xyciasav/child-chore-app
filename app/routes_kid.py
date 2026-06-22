@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, joinedload
 
 from app.database import get_db
-from app.models import Child, Chore, ChoreSubmission, Reward, RewardRedemption, ChoreStatus, RewardRedemptionStatus
+from app.models import Child, Chore, ChoreSubmission, DailyRoutineReset, Reward, RewardRedemption, ChoreStatus, RewardRedemptionStatus
 from app.core import templates
 
 router = APIRouter()
@@ -28,13 +28,21 @@ def is_switch_reward(reward: Reward) -> bool:
     return (reward.title or "").strip().casefold() == SWITCH_REWARD_TITLE
 
 
-def daily_switch_requirements(approved_chores: list[ChoreSubmission]) -> list[dict]:
+def daily_switch_requirements(
+    approved_chores: list[ChoreSubmission],
+    reset_at: datetime | None = None,
+) -> list[dict]:
     """Build today's approved-routine checklist for the Switch request."""
     today = datetime.now(PACIFIC_TIMEZONE).date()
     today_titles = [
         (submission.chore.title or "").casefold()
         for submission in approved_chores
-        if submission.submitted_at and submission.submitted_at.date() == today and submission.chore
+        if (
+            submission.submitted_at
+            and submission.submitted_at.date() == today
+            and (reset_at is None or submission.submitted_at > reset_at)
+            and submission.chore
+        )
     ]
     return [
         {"label": label, "complete": any(matches(title) for title in today_titles)}
@@ -143,7 +151,16 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         .options(selectinload(ChoreSubmission.chore))
     )
     approved_chores = approved_chores_result.scalars().all()
-    switch_requirements = daily_switch_requirements(approved_chores)
+    daily_reset_result = await db.execute(
+        select(DailyRoutineReset)
+        .where(DailyRoutineReset.child_id == child.id)
+        .where(DailyRoutineReset.routine_date == datetime.now(PACIFIC_TIMEZONE).date())
+    )
+    daily_reset = daily_reset_result.scalar_one_or_none()
+    switch_requirements = daily_switch_requirements(
+        approved_chores,
+        daily_reset.reset_at if daily_reset else None,
+    )
     switch_available = switch_is_available_now()
     switch_ready = (
         bool(switch_reward)
@@ -395,7 +412,19 @@ async def request_reward(
             .where(ChoreSubmission.status == ChoreStatus.APPROVED)
             .options(selectinload(ChoreSubmission.chore))
         )
-        if not all(item["complete"] for item in daily_switch_requirements(approved_result.scalars().all())):
+        daily_reset_result = await db.execute(
+            select(DailyRoutineReset)
+            .where(DailyRoutineReset.child_id == child.id)
+            .where(DailyRoutineReset.routine_date == datetime.now(PACIFIC_TIMEZONE).date())
+        )
+        daily_reset = daily_reset_result.scalar_one_or_none()
+        if not all(
+            item["complete"]
+            for item in daily_switch_requirements(
+                approved_result.scalars().all(),
+                daily_reset.reset_at if daily_reset else None,
+            )
+        ):
             return RedirectResponse(url="/kid?tab=rewards", status_code=303)
     # Standard rewards require enough coins. The Switch request is always free.
     elif child.coins < reward.coin_cost:

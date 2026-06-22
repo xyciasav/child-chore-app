@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Enum as SAEnum
+from sqlalchemy import Column, Integer, String, Float, Boolean, Date, DateTime, ForeignKey, Enum as SAEnum, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, relationship
 import enum
 
@@ -69,6 +69,17 @@ class ChoreSubmission(Base):
     # Relationships
     child = relationship("Child", back_populates="chore_submissions")
     chore = relationship("Chore", back_populates="submissions")
+
+
+class DailyRoutineReset(Base):
+    """Marks the point after which today's Switch routine must be completed again."""
+    __tablename__ = "daily_routine_resets"
+    __table_args__ = (UniqueConstraint("child_id", "routine_date", name="uq_daily_routine_reset"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    child_id = Column(Integer, ForeignKey("children.id"), nullable=False)
+    routine_date = Column(Date, nullable=False)
+    reset_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
 class Reward(Base):
