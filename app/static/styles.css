@@ -469,8 +469,8 @@ footer {
 
 .treasure-game-board {
     position: relative;
-    height: min(62vw, 420px);
-    min-height: 300px;
+    height: min(75vw, 540px);
+    min-height: 390px;
     overflow: hidden;
     touch-action: none;
     border-top: 5px solid #d69e2e;
@@ -483,14 +483,14 @@ footer {
         radial-gradient(circle at 78% 70%, #9ae6b4 0 7%, transparent 7.4%),
         radial-gradient(circle at 80% 15%, #68d391 0 10%, transparent 10.5%),
         radial-gradient(circle at 15% 82%, #68d391 0 12%, transparent 12.5%);
-    background-size: calc(100% / 7) calc(100% / 7), calc(100% / 7) calc(100% / 7), auto, auto, auto, auto;
+    background-size: calc(100% / 9) calc(100% / 9), calc(100% / 9) calc(100% / 9), auto, auto, auto, auto;
 }
 
 .treasure-token {
     position: absolute;
     z-index: 1;
     display: grid;
-    width: 12.5%;
+    width: 10.5%;
     aspect-ratio: 1;
     place-items: center;
     border-radius: 50%;
@@ -517,9 +517,33 @@ footer {
     animation: treasure-gem-glow 0.75s ease-in-out infinite alternate;
 }
 
+.treasure-freeze {
+    background: #fefcbf;
+    border: 3px solid #ecc94b;
+    animation: treasure-freeze-glow 0.55s ease-in-out infinite alternate;
+}
+
+.treasure-obstacle {
+    position: absolute;
+    z-index: 2;
+    width: 10.5%;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    font-size: clamp(1.45rem, 5vw, 2.5rem);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    filter: drop-shadow(0 3px 1px rgba(22, 101, 52, 0.35));
+}
+
 @keyframes treasure-gem-glow {
     from { transform: translate(-50%, -50%) scale(0.9) rotate(-8deg); }
     to { transform: translate(-50%, -50%) scale(1.08) rotate(8deg); }
+}
+
+@keyframes treasure-freeze-glow {
+    from { transform: translate(-50%, -50%) scale(0.86) rotate(-10deg); }
+    to { transform: translate(-50%, -50%) scale(1.08) rotate(10deg); }
 }
 
 .treasure-controls {

@@ -334,6 +334,7 @@
                 <div class="treasure-game-header">
                     <span>Treasure Dash</span>
                     <strong><span id="treasure-score">0</span> gems</strong>
+                    <strong id="treasure-hearts" aria-label="3 hearts">❤️❤️❤️</strong>
                     <strong><span id="treasure-time">45</span>s</strong>
                 </div>
                 <div id="treasure-game-board" class="treasure-game-board" aria-label="Treasure Dash game board"></div>
@@ -414,6 +415,7 @@ const treasureGame = document.getElementById('treasure-game');
 const treasureBoard = document.getElementById('treasure-game-board');
 const treasureScore = document.getElementById('treasure-score');
 const treasureTime = document.getElementById('treasure-time');
+const treasureHearts = document.getElementById('treasure-hearts');
 const treasureMessage = document.getElementById('treasure-game-message');
 
 function startTreasureDash() {
@@ -425,17 +427,27 @@ function startTreasureDash() {
     gameUrl.searchParams.delete('play');
     window.history.replaceState({}, '', gameUrl);
 
-    const boardSize = 7;
+    const boardSize = 9;
     let score = 0;
     let timeLeft = 45;
+    let hearts = 3;
     let gameOver = false;
-    let player = { x: 0, y: 6 };
-    let slime = { x: 6, y: 0 };
-    let gem = { x: 3, y: 3 };
+    let player = { x: 0, y: 8 };
+    let slime = { x: 8, y: 0 };
+    let gem = { x: 4, y: 4 };
+    let freezeStar = null;
+    let slimeFrozenUntil = 0;
     let touchStart = null;
+    const obstacles = [
+        { x: 2, y: 1, icon: '🌲' }, { x: 5, y: 1, icon: '🪨' },
+        { x: 7, y: 2, icon: '🌲' }, { x: 1, y: 3, icon: '🪨' },
+        { x: 4, y: 3, icon: '🌲' }, { x: 6, y: 5, icon: '🌲' },
+        { x: 2, y: 6, icon: '🪨' }, { x: 5, y: 7, icon: '🌲' },
+    ];
 
     treasureScore.textContent = score;
     treasureTime.textContent = timeLeft;
+    treasureHearts.textContent = '❤️'.repeat(hearts);
     treasureMessage.textContent = 'Swipe or use the arrows to start collecting gems!';
     treasureBoard.replaceChildren();
 
@@ -448,56 +460,94 @@ function startTreasureDash() {
     const gemToken = document.createElement('span');
     gemToken.className = 'treasure-token treasure-gem';
     gemToken.textContent = '💎';
-    treasureBoard.append(playerToken, slimeToken, gemToken);
+    const freezeToken = document.createElement('span');
+    freezeToken.className = 'treasure-token treasure-freeze';
+    freezeToken.textContent = '⭐';
+    freezeToken.hidden = true;
+    obstacles.forEach(obstacle => {
+        const obstacleToken = document.createElement('span');
+        obstacleToken.className = 'treasure-obstacle';
+        obstacleToken.textContent = obstacle.icon;
+        obstacleToken.style.left = `${((obstacle.x + 0.5) / boardSize) * 100}%`;
+        obstacleToken.style.top = `${((obstacle.y + 0.5) / boardSize) * 100}%`;
+        treasureBoard.appendChild(obstacleToken);
+    });
+    treasureBoard.append(playerToken, slimeToken, gemToken, freezeToken);
 
     const sameSpot = (first, second) => first.x === second.x && first.y === second.y;
+    const isBlocked = position => obstacles.some(obstacle => sameSpot(obstacle, position));
     const placeToken = (token, position) => {
         token.style.left = `${((position.x + 0.5) / boardSize) * 100}%`;
         token.style.top = `${((position.y + 0.5) / boardSize) * 100}%`;
     };
-    const randomOpenSpot = () => {
+    const randomOpenSpot = (extraSpots = []) => {
         let next;
         do {
             next = {
                 x: Math.floor(Math.random() * boardSize),
                 y: Math.floor(Math.random() * boardSize),
             };
-        } while (sameSpot(next, player) || sameSpot(next, slime));
+        } while (
+            sameSpot(next, player)
+            || sameSpot(next, slime)
+            || isBlocked(next)
+            || extraSpots.some(spot => sameSpot(next, spot))
+        );
         return next;
     };
     const renderBoard = () => {
         placeToken(playerToken, player);
         placeToken(slimeToken, slime);
         placeToken(gemToken, gem);
+        if (freezeStar) {
+            freezeToken.hidden = false;
+            placeToken(freezeToken, freezeStar);
+        } else {
+            freezeToken.hidden = true;
+        }
     };
     const slimeCaughtYou = () => {
-        score = Math.max(0, score - 1);
-        treasureScore.textContent = score;
-        treasureMessage.textContent = 'Slime got you! One gem slipped away.';
-        player = { x: 0, y: 6 };
-        slime = randomOpenSpot();
+        hearts -= 1;
+        treasureHearts.textContent = '❤️'.repeat(hearts) || '💔';
+        if (hearts <= 0) {
+            finishGame('The slime got all three hearts. Try again next time!');
+            return;
+        }
+        treasureMessage.textContent = `Slime got you! ${hearts} heart${hearts === 1 ? '' : 's'} left.`;
+        player = { x: 0, y: 8 };
+        slime = randomOpenSpot([gem, freezeStar].filter(Boolean));
     };
     const movePlayer = (xStep, yStep) => {
         if (gameOver) return;
         const next = { x: player.x + xStep, y: player.y + yStep };
-        if (next.x < 0 || next.x >= boardSize || next.y < 0 || next.y >= boardSize) return;
+        if (next.x < 0 || next.x >= boardSize || next.y < 0 || next.y >= boardSize || isBlocked(next)) return;
         player = next;
         if (sameSpot(player, gem)) {
             score += 1;
             treasureScore.textContent = score;
-            treasureMessage.textContent = 'Gem found! Keep going!';
-            gem = randomOpenSpot();
+            treasureMessage.textContent = 'Gem found! Keep exploring!';
+            gem = randomOpenSpot([freezeStar].filter(Boolean));
+            if (score % 3 === 0 && !freezeStar) {
+                freezeStar = randomOpenSpot([gem]);
+                treasureMessage.textContent = 'A freeze star appeared! Grab it to stop the slime.';
+            }
+        }
+        if (freezeStar && sameSpot(player, freezeStar)) {
+            freezeStar = null;
+            slimeFrozenUntil = Date.now() + 5000;
+            treasureMessage.textContent = 'Freeze star! The slime is stuck for 5 seconds.';
         }
         if (sameSpot(player, slime)) slimeCaughtYou();
         renderBoard();
     };
     const moveSlime = () => {
         if (gameOver) return;
+        if (Date.now() < slimeFrozenUntil) return;
         const options = [
             { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 },
         ].filter(step => {
             const next = { x: slime.x + step.x, y: slime.y + step.y };
-            return next.x >= 0 && next.x < boardSize && next.y >= 0 && next.y < boardSize;
+            return next.x >= 0 && next.x < boardSize && next.y >= 0 && next.y < boardSize && !isBlocked(next);
         });
         options.sort((first, second) => {
             const firstDistance = Math.abs(slime.x + first.x - player.x) + Math.abs(slime.y + first.y - player.y);
@@ -509,11 +559,11 @@ function startTreasureDash() {
         if (sameSpot(slime, player)) slimeCaughtYou();
         renderBoard();
     };
-    const finishGame = () => {
+    const finishGame = (message = null) => {
         gameOver = true;
         window.clearInterval(timer);
         window.clearInterval(slimeTimer);
-        treasureMessage.textContent = `Treasure secured: ${score} gem${score === 1 ? '' : 's'}!`;
+        treasureMessage.textContent = message || `Treasure secured: ${score} gem${score === 1 ? '' : 's'}!`;
         document.querySelectorAll('.treasure-controls button').forEach(button => button.disabled = true);
     };
 
