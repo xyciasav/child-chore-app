@@ -36,15 +36,15 @@ def daily_switch_requirements(approved_chores: list[ChoreSubmission]) -> list[di
         for submission in approved_chores
         if submission.submitted_at and submission.submitted_at.date() == today and submission.chore
     ]
+    return [
+        {"label": label, "complete": any(matches(title) for title in today_titles)}
+        for label, matches in DAILY_SWITCH_REQUIREMENTS
+    ]
 
 
 def switch_is_available_now() -> bool:
     """Keep Switch requests unavailable before 9:00 AM Pacific time."""
     return datetime.now(PACIFIC_TIMEZONE).time() >= SWITCH_AVAILABLE_TIME
-    return [
-        {"label": label, "complete": any(matches(title) for title in today_titles)}
-        for label, matches in DAILY_SWITCH_REQUIREMENTS
-    ]
 
 
 @router.get("/kid")
