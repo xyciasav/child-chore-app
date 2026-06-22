@@ -628,6 +628,26 @@ async def award_game_tickets(
     return RedirectResponse(url=ADMIN_TABS["children"], status_code=303)
 
 
+@router.post("/admin/tickets/reset-child")
+async def reset_child_tickets(
+    request: Request,
+    child_id: int = Form(...),
+    db: AsyncSession = Depends(get_db)
+):
+    """Reset one child's Fun Zone play passes to zero."""
+    redirect = check_admin_cookie(request)
+    if redirect:
+        return redirect
+
+    child_result = await db.execute(select(Child).where(Child.id == child_id))
+    child = child_result.scalar_one_or_none()
+    if child:
+        child.game_tickets = 0
+        await db.commit()
+
+    return RedirectResponse(url=ADMIN_TABS["children"], status_code=303)
+
+
 @router.post("/admin/coins/reset-child")
 async def reset_child_coins(
     request: Request,

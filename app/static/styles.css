@@ -152,7 +152,7 @@ footer {
 /* --- Kid Tabs --- */
 .kid-tabs {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.5rem;
     background: white;
     border-radius: 8px;
@@ -166,8 +166,8 @@ footer {
     background: white;
     color: #4a5568;
     border-radius: 8px;
-    padding: 0.85rem 1rem;
-    font-size: 1rem;
+    padding: 0.75rem 0.35rem;
+    font-size: clamp(0.75rem, 2.2vw, 1rem);
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
@@ -452,9 +452,10 @@ footer {
 .treasure-game {
     margin-top: 1rem;
     overflow: hidden;
-    border: 3px solid #2f855a;
+    border: 4px solid #2f855a;
     border-radius: 16px;
-    background: #f0fff4;
+    background: #102a43;
+    box-shadow: 0 12px 26px rgba(22, 101, 52, 0.28);
 }
 
 .treasure-game-header {
@@ -462,7 +463,7 @@ footer {
     justify-content: space-between;
     gap: 0.5rem;
     padding: 0.75rem 1rem;
-    background: #276749;
+    background: linear-gradient(90deg, #1a365d, #276749);
     color: white;
 }
 
@@ -472,36 +473,47 @@ footer {
     min-height: 300px;
     overflow: hidden;
     touch-action: none;
-    background-color: #c6f6d5;
+    border-top: 5px solid #d69e2e;
+    border-bottom: 5px solid #d69e2e;
+    background-color: #2f855a;
     background-image:
         linear-gradient(rgba(255, 255, 255, 0.45) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255, 255, 255, 0.45) 1px, transparent 1px),
         radial-gradient(circle at 18% 12%, #fefcbf 0 4%, transparent 4.4%),
-        radial-gradient(circle at 78% 70%, #9ae6b4 0 7%, transparent 7.4%);
-    background-size: calc(100% / 7) calc(100% / 7), calc(100% / 7) calc(100% / 7), auto, auto;
+        radial-gradient(circle at 78% 70%, #9ae6b4 0 7%, transparent 7.4%),
+        radial-gradient(circle at 80% 15%, #68d391 0 10%, transparent 10.5%),
+        radial-gradient(circle at 15% 82%, #68d391 0 12%, transparent 12.5%);
+    background-size: calc(100% / 7) calc(100% / 7), calc(100% / 7) calc(100% / 7), auto, auto, auto, auto;
 }
 
 .treasure-token {
     position: absolute;
     z-index: 1;
     display: grid;
-    width: 11.5%;
+    width: 12.5%;
     aspect-ratio: 1;
     place-items: center;
-    font-size: clamp(1.5rem, 5vw, 2.6rem);
+    border-radius: 50%;
+    font-size: clamp(1.6rem, 5.4vw, 2.8rem);
     transform: translate(-50%, -50%);
     transition: left 0.16s ease, top 0.16s ease, transform 0.16s ease;
 }
 
 .treasure-player {
+    background: #fefcbf;
+    border: 3px solid #d69e2e;
     filter: drop-shadow(0 3px 2px rgba(45, 55, 72, 0.28));
 }
 
 .treasure-slime {
+    background: #e9d8fd;
+    border: 3px solid #805ad5;
     filter: drop-shadow(0 3px 2px rgba(39, 103, 73, 0.3));
 }
 
 .treasure-gem {
+    background: rgba(255, 255, 255, 0.85);
+    border: 3px solid #63b3ed;
     animation: treasure-gem-glow 0.75s ease-in-out infinite alternate;
 }
 
@@ -525,7 +537,7 @@ footer {
     height: 48px;
     border: 0;
     border-radius: 10px;
-    background: #48bb78;
+    background: linear-gradient(180deg, #68d391, #2f855a);
     color: white;
     font-size: 1.1rem;
     font-weight: 800;
@@ -549,7 +561,7 @@ footer {
 .treasure-game-message {
     margin: 0;
     padding: 0.75rem;
-    color: #276749;
+    color: #f0fff4;
     font-weight: 700;
     text-align: center;
 }

@@ -322,6 +322,10 @@
                         <input type="hidden" name="child_id" value="{{ child.id }}">
                         <button type="submit" class="btn btn-outline" onclick="return confirm('Reset {{ child.name }}\'s coins to 0?')">Reset Coins</button>
                     </form>
+                    <form action="/admin/tickets/reset-child" method="post" class="inline-form">
+                        <input type="hidden" name="child_id" value="{{ child.id }}">
+                        <button type="submit" class="btn btn-outline" onclick="return confirm('Reset {{ child.name }}\'s play passes to 0?')">Reset Passes</button>
+                    </form>
                     <form action="/admin/daily-routine/reset" method="post" class="inline-form">
                         <input type="hidden" name="child_id" value="{{ child.id }}">
                         <button type="submit" class="btn btn-danger" onclick="return confirm('Reset today\'s Switch checklist for {{ child.name }}? This also cancels any pending Switch request.')">Reset Daily Switch</button>

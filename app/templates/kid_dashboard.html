@@ -1,17 +1,18 @@
 {% extends "base.html" %}
 
 {% block title %}Chore Tracker - Kids{% endblock %}
-{% block header %}🌟 My Chores{% endblock %}
+{% block header %}🌟 My Day{% endblock %}
 
 {% block content %}
 <div class="container">
     <nav class="kid-tabs kid-tabs-top" aria-label="Kid dashboard tabs">
-        <button type="button" class="kid-tab-btn active" data-kid-tab="kid-chores">Chores</button>
+        <button type="button" class="kid-tab-btn active" data-kid-tab="kid-dashboard">Dashboard</button>
+        <button type="button" class="kid-tab-btn" data-kid-tab="kid-chores">Chores</button>
         <button type="button" class="kid-tab-btn" data-kid-tab="kid-rewards">Rewards</button>
         <button type="button" class="kid-tab-btn" data-kid-tab="kid-games">Fun Zone {% if game_tickets %}({{ game_tickets }}){% endif %}</button>
     </nav>
 
-    <div id="kid-chores" class="kid-tab-content active">
+    <div id="kid-dashboard" class="kid-tab-content active">
     <div class="kid-dashboard-top">
         <section class="daily-switch-tracker" aria-labelledby="daily-switch-heading">
             <div class="daily-switch-heading">
@@ -117,6 +118,9 @@
         </div>
     </section>
 
+    </div>
+
+    <div id="kid-chores" class="kid-tab-content">
     <!-- Random Chore Spinner -->
     <section class="section">
         <div class="spinner-box">
@@ -440,7 +444,7 @@ function startTreasureDash() {
     playerToken.textContent = '🧭';
     const slimeToken = document.createElement('span');
     slimeToken.className = 'treasure-token treasure-slime';
-    slimeToken.textContent = '🟢';
+    slimeToken.textContent = '👾';
     const gemToken = document.createElement('span');
     gemToken.className = 'treasure-token treasure-gem';
     gemToken.textContent = '💎';
