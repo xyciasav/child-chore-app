@@ -449,6 +449,12 @@ footer {
     margin: 0;
 }
 
+.game-card .game-high-score {
+    margin-top: 0.45rem;
+    color: #805ad5;
+    font-weight: 700;
+}
+
 .treasure-game {
     margin-top: 1rem;
     overflow: hidden;

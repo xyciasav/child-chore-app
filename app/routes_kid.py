@@ -2,7 +2,7 @@ from collections import OrderedDict
 from datetime import datetime, time
 from zoneinfo import ZoneInfo
 from fastapi import APIRouter, Request, Form, Depends
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, joinedload
@@ -290,6 +290,7 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         "pending_chores": pending_chores,
         "pending_rewards": pending_rewards,
         "game_tickets": child.game_tickets or 0,
+        "treasure_high_score": child.treasure_high_score or 0,
         "switch_reward": switch_reward,
         "switch_requirements": switch_requirements,
         "switch_ready": switch_ready,
@@ -342,6 +343,30 @@ async def start_game(db: AsyncSession = Depends(get_db)):
     child.game_tickets -= 1
     await db.commit()
     return RedirectResponse(url="/kid?tab=games&play=1", status_code=303)
+
+
+@router.post("/kid/game/treasure-score")
+async def save_treasure_score(
+    score: int = Form(...),
+    db: AsyncSession = Depends(get_db)
+):
+    """Keep each child's best Treasure Dash score."""
+    result = await db.execute(select(Child))
+    child = result.scalar_one_or_none()
+    if not child:
+        return JSONResponse({"high_score": 0, "is_new_high_score": False})
+
+    safe_score = max(0, min(score, 999))
+    previous_high_score = child.treasure_high_score or 0
+    is_new_high_score = safe_score > previous_high_score
+    if is_new_high_score:
+        child.treasure_high_score = safe_score
+        await db.commit()
+
+    return JSONResponse({
+        "high_score": child.treasure_high_score or 0,
+        "is_new_high_score": is_new_high_score,
+    })
 
 @router.post("/kid/reward/goal")
 async def set_reward_goal(

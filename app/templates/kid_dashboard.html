@@ -322,6 +322,7 @@
                 <div>
                     <h3>Treasure Dash</h3>
                     <p>Collect gems, dodge the slime, and beat the 45-second clock.</p>
+                    <p class="game-high-score">High score: <strong id="treasure-high-score">{{ treasure_high_score }}</strong> gems</p>
                 </div>
                 <form action="/kid/game/start" method="post" class="game-start-form">
                     <button type="submit" class="btn btn-primary" {% if not game_tickets %}disabled{% endif %}>
@@ -575,6 +576,26 @@ function startTreasureDash() {
         window.clearInterval(slimeTimer);
         treasureMessage.textContent = message || `Treasure secured: ${score} gem${score === 1 ? '' : 's'}!`;
         document.querySelectorAll('.treasure-controls button').forEach(button => button.disabled = true);
+        saveTreasureScore(score);
+    };
+
+    const saveTreasureScore = async finalScore => {
+        try {
+            const response = await fetch('/kid/game/treasure-score', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ score: finalScore }),
+            });
+            if (!response.ok) return;
+            const result = await response.json();
+            const highScore = document.getElementById('treasure-high-score');
+            if (highScore) highScore.textContent = result.high_score;
+            if (result.is_new_high_score) {
+                treasureMessage.textContent = `🏆 New high score: ${result.high_score} gems!`;
+            }
+        } catch (_) {
+            // The current round still finishes normally if saving the score fails.
+        }
     };
 
     const moveMap = {

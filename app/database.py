@@ -62,6 +62,11 @@ async def init_db():
                     text("ALTER TABLE children ADD COLUMN game_tickets INTEGER NOT NULL DEFAULT 0")
                 )
 
+            if "treasure_high_score" not in child_column_names:
+                await conn.execute(
+                    text("ALTER TABLE children ADD COLUMN treasure_high_score INTEGER NOT NULL DEFAULT 0")
+                )
+
 
 async def get_db():
     """Dependency for getting a database session."""
