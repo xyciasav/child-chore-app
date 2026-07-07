@@ -361,6 +361,33 @@
             </form>
             {% endif %}
         </div>
+        <div class="admin-form-box">
+            <h3>Plinko Rewards</h3>
+            <p>Set each slot's coin prize and weight. Higher weight means that slot is more likely.</p>
+            <form action="/admin/plinko/update" method="post" class="admin-form">
+                <div class="plinko-admin-grid">
+                    {% for slot in plinko_slots %}
+                    <div class="plinko-admin-row">
+                        <strong>Slot {{ slot.position + 1 }}</strong>
+                        <input type="hidden" name="slot_id" value="{{ slot.id }}">
+                        <div class="form-group">
+                            <label for="plinko-coins-{{ slot.id }}">Coins</label>
+                            <input type="number" id="plinko-coins-{{ slot.id }}" name="coin_value" min="0" step="1" value="{{ slot.coin_value }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="plinko-weight-{{ slot.id }}">Weight</label>
+                            <input type="number" id="plinko-weight-{{ slot.id }}" name="weight" min="0" step="1" value="{{ slot.weight }}" required>
+                        </div>
+                        <label class="checkbox-row">
+                            <input type="checkbox" name="active_ids" value="{{ slot.id }}" {% if slot.active %}checked{% endif %}>
+                            Active
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="btn btn-primary">Save Plinko Rewards</button>
+            </form>
+        </div>
     </div>
     <div class="admin-form-box">
         <h3>Admin Tools</h3>

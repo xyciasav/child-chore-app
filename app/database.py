@@ -87,6 +87,31 @@ async def init_db():
                     text("ALTER TABLE children ADD COLUMN game_round_slot INTEGER NOT NULL DEFAULT 0")
                 )
 
+            plinko_count_result = await conn.execute(text("SELECT COUNT(*) FROM plinko_slots"))
+            if plinko_count_result.scalar_one() == 0:
+                default_slots = [
+                    (0, 1, 24, 1),
+                    (1, 2, 18, 1),
+                    (2, 1, 24, 1),
+                    (3, 3, 12, 1),
+                    (4, 1, 16, 1),
+                    (5, 5, 4, 1),
+                    (6, 0, 2, 1),
+                ]
+                for position, coin_value, weight, active in default_slots:
+                    await conn.execute(
+                        text(
+                            "INSERT INTO plinko_slots (position, coin_value, weight, active) "
+                            "VALUES (:position, :coin_value, :weight, :active)"
+                        ),
+                        {
+                            "position": position,
+                            "coin_value": coin_value,
+                            "weight": weight,
+                            "active": active,
+                        },
+                    )
+
 
 async def get_db():
     """Dependency for getting a database session."""

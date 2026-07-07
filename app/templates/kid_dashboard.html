@@ -410,13 +410,9 @@
                         {% endfor %}
                     {% endfor %}
                     <div class="plinko-slots" aria-hidden="true">
-                        <span>1 🪙</span>
-                        <span>2 🪙</span>
-                        <span>1 🪙</span>
-                        <span>3 🪙</span>
-                        <span>1 🪙</span>
-                        <span>5 🪙</span>
-                        <span>0</span>
+                        {% for slot in plinko_slots %}
+                        <span>{{ slot.coins }}{% if slot.coins %} 🪙{% endif %}</span>
+                        {% endfor %}
                     </div>
                 </div>
                 <p id="plinko-message" class="plinko-message">The chip is bouncing...</p>

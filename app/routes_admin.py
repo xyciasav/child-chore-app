@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 
 from app.database import get_db
 from app.models import (
-    Child, Chore, ChoreSubmission, DailyRoutineReset, Reward, RewardRedemption,
+    Child, Chore, ChoreSubmission, DailyRoutineReset, PlinkoSlot, Reward, RewardRedemption,
     ChoreStatus, RewardRedemptionStatus
 )
 from app.core import templates
@@ -98,6 +98,9 @@ async def admin_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
     children_result = await db.execute(select(Child))
     children = children_result.scalars().all()
 
+    plinko_slots_result = await db.execute(select(PlinkoSlot).order_by(PlinkoSlot.position))
+    plinko_slots = plinko_slots_result.scalars().all()
+
     chore_history_result = await db.execute(select(ChoreSubmission))
     chore_history = chore_history_result.scalars().all()
 
@@ -123,6 +126,7 @@ async def admin_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         "rewards": rewards,
         "pending_rewards": pending_rewards,
         "children": children,
+        "plinko_slots": plinko_slots,
         "metrics": metrics,
     })
 
@@ -764,6 +768,41 @@ async def reset_child_tickets(
         child.game_tickets = 0
         await db.commit()
 
+    return RedirectResponse(url=ADMIN_TABS["children"], status_code=303)
+
+
+@router.post("/admin/plinko/update")
+async def update_plinko_slots(
+    request: Request,
+    slot_id: list[int] = Form([]),
+    coin_value: list[int] = Form([]),
+    weight: list[int] = Form([]),
+    active_ids: list[int] = Form([]),
+    db: AsyncSession = Depends(get_db)
+):
+    """Update Plinko coin prize amounts and draw weights."""
+    redirect = check_admin_cookie(request)
+    if redirect:
+        return redirect
+
+    if not slot_id:
+        return RedirectResponse(url=ADMIN_TABS["children"], status_code=303)
+
+    slots_result = await db.execute(select(PlinkoSlot).where(PlinkoSlot.id.in_(slot_id)))
+    slots_by_id = {slot.id: slot for slot in slots_result.scalars().all()}
+    active_id_set = set(active_ids)
+    row_count = min(len(slot_id), len(coin_value), len(weight))
+
+    for index in range(row_count):
+        slot = slots_by_id.get(slot_id[index])
+        if not slot:
+            continue
+
+        slot.coin_value = max(0, coin_value[index])
+        slot.weight = max(0, weight[index])
+        slot.active = slot.id in active_id_set
+
+    await db.commit()
     return RedirectResponse(url=ADMIN_TABS["children"], status_code=303)
 
 

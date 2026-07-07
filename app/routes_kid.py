@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, joinedload
 
 from app.database import get_db
-from app.models import Child, Chore, ChoreSubmission, DailyRoutineReset, Reward, RewardRedemption, ChoreStatus, RewardRedemptionStatus
+from app.models import Child, Chore, ChoreSubmission, DailyRoutineReset, PlinkoSlot, Reward, RewardRedemption, ChoreStatus, RewardRedemptionStatus
 from app.core import templates
 
 router = APIRouter()
@@ -23,6 +23,15 @@ DAILY_SWITCH_REQUIREMENTS = (
     ("Eat breakfast", lambda title: "breakfast" in title),
     ("Take snack trash downstairs", lambda title: "snack" in title and "trash" in title),
 )
+DEFAULT_PLINKO_SLOTS = [
+    {"slot": 0, "coins": 1, "weight": 24},
+    {"slot": 1, "coins": 2, "weight": 18},
+    {"slot": 2, "coins": 1, "weight": 24},
+    {"slot": 3, "coins": 3, "weight": 12},
+    {"slot": 4, "coins": 1, "weight": 16},
+    {"slot": 5, "coins": 5, "weight": 4},
+    {"slot": 6, "coins": 0, "weight": 2},
+]
 
 
 def is_switch_reward(reward: Reward) -> bool:
@@ -55,6 +64,20 @@ def daily_switch_requirements(
 def switch_is_available_now() -> bool:
     """Keep Switch requests unavailable before 9:00 AM Pacific time."""
     return datetime.now(PACIFIC_TIMEZONE).time() >= SWITCH_AVAILABLE_TIME
+
+
+async def get_plinko_slots(db: AsyncSession) -> list[dict]:
+    """Return configured Plinko slots with a safe default fallback."""
+    slots_result = await db.execute(select(PlinkoSlot).order_by(PlinkoSlot.position))
+    configured_slots = [
+        {
+            "slot": slot.position,
+            "coins": max(0, slot.coin_value),
+            "weight": max(0, slot.weight) if slot.active else 0,
+        }
+        for slot in slots_result.scalars().all()
+    ]
+    return configured_slots or DEFAULT_PLINKO_SLOTS
 
 
 @router.get("/kid")
@@ -380,6 +403,8 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
     if goal_reward and goal_reward.coin_cost > 0:
         goal_progress_percent = min(100, int((child.coins / goal_reward.coin_cost) * 100))
 
+    plinko_slots = await get_plinko_slots(db)
+
     return templates.TemplateResponse("kid_dashboard.html", {
         "request": request,
         "child": child,
@@ -403,6 +428,7 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         "play_game": play_game,
         "plinko_prize": plinko_prize,
         "plinko_slot": plinko_slot,
+        "plinko_slots": plinko_slots,
         "switch_reward": switch_reward,
         "switch_requirements": switch_requirements,
         "switch_ready": switch_ready,
@@ -452,16 +478,11 @@ async def start_game(db: AsyncSession = Depends(get_db)):
     if not child or (child.game_tickets or 0) < 1:
         return RedirectResponse(url="/kid?tab=games", status_code=303)
 
-    plinko_slots = [
-        {"slot": 0, "coins": 1, "weight": 24},
-        {"slot": 1, "coins": 2, "weight": 18},
-        {"slot": 2, "coins": 1, "weight": 24},
-        {"slot": 3, "coins": 3, "weight": 12},
-        {"slot": 4, "coins": 1, "weight": 16},
-        {"slot": 5, "coins": 5, "weight": 4},
-        {"slot": 6, "coins": 0, "weight": 2},
-    ]
-    prize = random.choices(plinko_slots, weights=[item["weight"] for item in plinko_slots], k=1)[0]
+    plinko_slots = await get_plinko_slots(db)
+    weighted_slots = [slot for slot in plinko_slots if slot["weight"] > 0]
+    if not weighted_slots:
+        weighted_slots = DEFAULT_PLINKO_SLOTS
+    prize = random.choices(weighted_slots, weights=[item["weight"] for item in weighted_slots], k=1)[0]
 
     child.game_tickets -= 1
     child.coins += prize["coins"]

@@ -116,3 +116,14 @@ class RewardRedemption(Base):
     # Relationships
     child = relationship("Child", back_populates="reward_redemptions")
     reward = relationship("Reward", back_populates="redemptions")
+
+
+class PlinkoSlot(Base):
+    """Configurable coin prize and odds for one Plinko slot."""
+    __tablename__ = "plinko_slots"
+
+    id = Column(Integer, primary_key=True, index=True)
+    position = Column(Integer, nullable=False, unique=True)
+    coin_value = Column(Integer, nullable=False, default=1)
+    weight = Column(Integer, nullable=False, default=1)
+    active = Column(Boolean, default=True)
