@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from datetime import datetime, time
 import random
+import secrets
 from zoneinfo import ZoneInfo
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.responses import RedirectResponse
@@ -70,7 +71,15 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         await db.commit()
         await db.refresh(child)
 
-    play_game = request.query_params.get("play") == "1" and bool(child.game_round_ready)
+    requested_game_token = request.query_params.get("play") or ""
+    play_game = bool(
+        requested_game_token
+        and child.game_round_ready
+        and child.game_round_token
+        and secrets.compare_digest(requested_game_token, child.game_round_token)
+    )
+    plinko_prize = (child.game_round_prize or 0) if play_game else 0
+    plinko_slot = (child.game_round_slot or 0) if play_game else 0
     if play_game:
         # A launch is consumed by the first page render, so refreshes cannot replay it.
         child.game_round_ready = False
@@ -149,6 +158,11 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         .options(selectinload(RewardRedemption.reward))
     )
     pending_rewards = pending_rewards_result.scalars().all()
+    pending_reward_ids = {
+        redemption.reward_id
+        for redemption in pending_rewards
+        if redemption.reward_id is not None
+    }
     switch_requested = any(
         redemption.reward and is_switch_reward(redemption.reward)
         for redemption in pending_rewards
@@ -384,8 +398,11 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         "locked_badges": locked_badges,
         "pending_chores": pending_chores,
         "pending_rewards": pending_rewards,
+        "pending_reward_ids": pending_reward_ids,
         "game_tickets": child.game_tickets or 0,
         "play_game": play_game,
+        "plinko_prize": plinko_prize,
+        "plinko_slot": plinko_slot,
         "switch_reward": switch_reward,
         "switch_requirements": switch_requirements,
         "switch_ready": switch_ready,
@@ -449,9 +466,12 @@ async def start_game(db: AsyncSession = Depends(get_db)):
     child.game_tickets -= 1
     child.coins += prize["coins"]
     child.game_round_ready = True
+    child.game_round_token = secrets.token_urlsafe(18)
+    child.game_round_prize = prize["coins"]
+    child.game_round_slot = prize["slot"]
     await db.commit()
     return RedirectResponse(
-        url=f"/kid?tab=games&play=1&prize={prize['coins']}&slot={prize['slot']}",
+        url=f"/kid?tab=games&play={child.game_round_token}",
         status_code=303,
     )
 
@@ -505,18 +525,18 @@ async def request_reward(
     if not reward:
         return RedirectResponse(url="/kid", status_code=303)
 
+    existing_request_result = await db.execute(
+        select(RewardRedemption.id)
+        .where(RewardRedemption.child_id == child.id)
+        .where(RewardRedemption.reward_id == reward.id)
+        .where(RewardRedemption.status == RewardRedemptionStatus.PENDING)
+        .limit(1)
+    )
+    if existing_request_result.scalar_one_or_none() is not None:
+        return RedirectResponse(url="/kid?tab=rewards", status_code=303)
+
     if is_switch_reward(reward):
         if not switch_is_available_now():
-            return RedirectResponse(url="/kid", status_code=303)
-
-        existing_request_result = await db.execute(
-            select(RewardRedemption.id)
-            .where(RewardRedemption.child_id == child.id)
-            .where(RewardRedemption.reward_id == reward.id)
-            .where(RewardRedemption.status == RewardRedemptionStatus.PENDING)
-            .limit(1)
-        )
-        if existing_request_result.scalar_one_or_none() is not None:
             return RedirectResponse(url="/kid", status_code=303)
 
         approved_result = await db.execute(
@@ -553,3 +573,29 @@ async def request_reward(
     await db.commit()
 
     return RedirectResponse(url="/kid", status_code=303)
+
+
+@router.post("/kid/reward/cancel")
+async def cancel_reward_request(
+    redemption_id: int = Form(...),
+    db: AsyncSession = Depends(get_db)
+):
+    """Cancel one pending reward request for the current child."""
+    result = await db.execute(select(Child))
+    child = result.scalar_one_or_none()
+    if not child:
+        return RedirectResponse(url="/kid?tab=rewards", status_code=303)
+
+    redemption_result = await db.execute(
+        select(RewardRedemption)
+        .where(RewardRedemption.id == redemption_id)
+        .where(RewardRedemption.child_id == child.id)
+        .where(RewardRedemption.status == RewardRedemptionStatus.PENDING)
+    )
+    redemption = redemption_result.scalar_one_or_none()
+    if redemption:
+        redemption.status = RewardRedemptionStatus.DENIED
+        redemption.reviewed_at = datetime.utcnow()
+        await db.commit()
+
+    return RedirectResponse(url="/kid?tab=rewards", status_code=303)

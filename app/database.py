@@ -72,6 +72,21 @@ async def init_db():
                     text("ALTER TABLE children ADD COLUMN game_round_ready BOOLEAN NOT NULL DEFAULT 0")
                 )
 
+            if "game_round_token" not in child_column_names:
+                await conn.execute(
+                    text("ALTER TABLE children ADD COLUMN game_round_token VARCHAR(64)")
+                )
+
+            if "game_round_prize" not in child_column_names:
+                await conn.execute(
+                    text("ALTER TABLE children ADD COLUMN game_round_prize INTEGER NOT NULL DEFAULT 0")
+                )
+
+            if "game_round_slot" not in child_column_names:
+                await conn.execute(
+                    text("ALTER TABLE children ADD COLUMN game_round_slot INTEGER NOT NULL DEFAULT 0")
+                )
+
 
 async def get_db():
     """Dependency for getting a database session."""

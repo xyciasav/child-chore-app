@@ -32,6 +32,9 @@ class Child(Base):
     game_tickets = Column(Integer, default=0)
     treasure_high_score = Column(Integer, default=0)
     game_round_ready = Column(Boolean, default=False)
+    game_round_token = Column(String(64), nullable=True)
+    game_round_prize = Column(Integer, default=0)
+    game_round_slot = Column(Integer, default=0)
     goal_reward_id = Column(Integer, ForeignKey("rewards.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 

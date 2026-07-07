@@ -241,7 +241,7 @@
             <h3 class="reward-tier-heading">Ready Now ✨</h3>
             <div class="reward-grid">
                 {% for reward in affordable_rewards %}
-                <div class="reward-card reward-card-ready">
+                <div class="reward-card reward-card-ready {% if reward.id in pending_reward_ids %}reward-card-pending{% endif %}">
                     <div class="reward-card-top">
                         <span class="reward-status-pill">Ready</span>
                         <span class="reward-cost">{{ reward.coin_cost|int }} 🪙</span>
@@ -252,8 +252,8 @@
 
                     <form action="/kid/reward/request" method="post" class="reward-form">
                         <input type="hidden" name="reward_id" value="{{ reward.id }}">
-                        <button type="submit" class="btn btn-secondary">
-                            I Want This!
+                        <button type="submit" class="btn btn-secondary" {% if reward.id in pending_reward_ids %}disabled{% endif %}>
+                            {% if reward.id in pending_reward_ids %}Request Pending{% else %}I Want This!{% endif %}
                         </button>
                     </form>
 
@@ -276,7 +276,7 @@
             <h3 class="reward-tier-heading">Almost There 🌟</h3>
             <div class="reward-grid">
                 {% for reward in almost_rewards %}
-                <div class="reward-card">
+                <div class="reward-card {% if reward.id in pending_reward_ids %}reward-card-pending{% endif %}">
                     <div class="reward-card-top">
                         <span class="reward-status-pill">Close</span>
                         <span class="reward-cost">{{ reward.coin_cost|int }} 🪙</span>
@@ -289,7 +289,7 @@
                     <form action="/kid/reward/request" method="post" class="reward-form">
                         <input type="hidden" name="reward_id" value="{{ reward.id }}">
                         <button type="submit" class="btn btn-secondary" disabled>
-                            Not Enough Coins
+                            {% if reward.id in pending_reward_ids %}Request Pending{% else %}Not Enough Coins{% endif %}
                         </button>
                     </form>
 
@@ -312,7 +312,7 @@
             <h3 class="reward-tier-heading">Save Up Rewards 🏆</h3>
             <div class="reward-grid">
                 {% for reward in save_up_rewards %}
-                <div class="reward-card">
+                <div class="reward-card {% if reward.id in pending_reward_ids %}reward-card-pending{% endif %}">
                     <div class="reward-card-top">
                         <span class="reward-status-pill">Save up</span>
                         <span class="reward-cost">{{ reward.coin_cost|int }} 🪙</span>
@@ -325,7 +325,7 @@
                     <form action="/kid/reward/request" method="post" class="reward-form">
                         <input type="hidden" name="reward_id" value="{{ reward.id }}">
                         <button type="submit" class="btn btn-secondary" disabled>
-                            Not Enough Coins
+                            {% if reward.id in pending_reward_ids %}Request Pending{% else %}Not Enough Coins{% endif %}
                         </button>
                     </form>
 
@@ -353,7 +353,16 @@
                 {% for redemption in pending_rewards %}
                 <div class="pending-item">
                     <span>{{ redemption.reward.title }}</span>
-                    <span class="status-badge status-pending">Pending</span>
+                    <div class="pending-actions">
+                        <span class="status-badge status-pending">Pending</span>
+                        <form action="/kid/reward/cancel" method="post" class="inline-form">
+                            <input type="hidden" name="redemption_id" value="{{ redemption.id }}">
+                            <button type="submit" class="btn btn-outline btn-small"
+                                    onclick="return confirm('Cancel this reward request?')">
+                                Cancel
+                            </button>
+                        </form>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
@@ -388,7 +397,7 @@
                 </form>
             </div>
 
-            <div id="plinko-game" class="plinko-game" {% if not play_game %}hidden{% endif %}>
+            <div id="plinko-game" class="plinko-game" data-prize="{{ plinko_prize }}" data-slot="{{ plinko_slot }}" {% if not play_game %}hidden{% endif %}>
                 <div class="plinko-header">
                     <span>Plinko Drop</span>
                     <strong id="plinko-status">Dropping...</strong>
@@ -522,13 +531,11 @@ function startPlinkoDrop() {
     }
 
     const gameUrl = new URL(window.location);
-    const prizeCoins = Number(gameUrl.searchParams.get('prize') || 0);
-    const prizeSlot = Number(gameUrl.searchParams.get('slot') || 0);
     gameUrl.searchParams.delete('play');
-    gameUrl.searchParams.delete('prize');
-    gameUrl.searchParams.delete('slot');
     window.history.replaceState({}, '', gameUrl);
 
+    const prizeCoins = Number(plinkoGame.dataset.prize || 0);
+    const prizeSlot = Number(plinkoGame.dataset.slot || 0);
     const result = {
         slot: Number.isFinite(prizeSlot) ? Math.max(0, Math.min(6, prizeSlot)) : 0,
         label: prizeCoins === 1 ? '1 coin' : prizeCoins > 1 ? `${prizeCoins} coins` : 'no coins this time',

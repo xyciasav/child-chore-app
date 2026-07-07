@@ -502,6 +502,12 @@ footer {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
+.pending-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 /* --- Status Badges --- */
 .status-badge {
     display: inline-block;
@@ -602,6 +608,11 @@ footer {
 .btn-outline:hover {
     background-color: #667eea;
     color: white;
+}
+
+.btn-small {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.82rem;
 }
 
 /* --- Forms --- */
@@ -1548,6 +1559,11 @@ footer {
     border-color: #48bb78;
 }
 
+.reward-card-pending {
+    border-color: #ecc94b;
+    background: #fffff0;
+}
+
 .reward-card .reward-cost {
     margin: 0;
     padding: 0.25rem 0.65rem;
@@ -1563,6 +1579,11 @@ footer {
 .reward-card-ready .reward-status-pill {
     background: #c6f6d5;
     color: #276749;
+}
+
+.reward-card-pending .reward-status-pill {
+    background: #fefcbf;
+    color: #975a16;
 }
 
 .reward-progress {
