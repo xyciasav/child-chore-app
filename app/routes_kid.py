@@ -1,9 +1,10 @@
 from collections import OrderedDict
 from datetime import datetime, time
+import random
 from zoneinfo import ZoneInfo
 from fastapi import APIRouter, Request, Form, Depends
-from fastapi.responses import JSONResponse, RedirectResponse
-from sqlalchemy import select, func
+from fastapi.responses import RedirectResponse
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, joinedload
 
@@ -126,6 +127,10 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         reward for reward in standard_rewards
         if child.coins < reward.coin_cost and reward.coin_cost - child.coins > 25
     ]
+    reward_progress = {
+        reward.id: 100 if reward.coin_cost <= 0 else min(100, int((child.coins / reward.coin_cost) * 100))
+        for reward in standard_rewards
+    }
 
     # Get pending chore submissions for this child
     pending_chores_result = await db.execute(
@@ -196,6 +201,26 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         1 for submission in approved_chores
         if submission.chore and "plant" in (submission.chore.title or "").lower()
     )
+    kitchen_count = sum(
+        1 for submission in approved_chores
+        if submission.chore and (submission.chore.room or "").lower() == "kitchen"
+    )
+    bedroom_count = sum(
+        1 for submission in approved_chores
+        if submission.chore and (submission.chore.room or "").lower() == "bedroom"
+    )
+    trash_count = sum(
+        1 for submission in approved_chores
+        if submission.chore and "trash" in (submission.chore.title or "").lower()
+    )
+    breakfast_count = sum(
+        1 for submission in approved_chores
+        if submission.chore and "breakfast" in (submission.chore.title or "").lower()
+    )
+    today_approved_count = sum(
+        1 for submission in approved_chores
+        if submission.submitted_at and submission.submitted_at.date() == datetime.now(PACIFIC_TIMEZONE).date()
+    )
 
     badges = []
 
@@ -213,11 +238,39 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
             "description": "Completed 10 approved chores."
         })
 
+    if approved_chore_count >= 25:
+        badges.append({
+            "icon": "🌟",
+            "title": "25 Chore Streak",
+            "description": "Completed 25 approved chores."
+        })
+
+    if approved_chore_count >= 50:
+        badges.append({
+            "icon": "💎",
+            "title": "50 Chore Legend",
+            "description": "Completed 50 approved chores."
+        })
+
+    if today_approved_count >= 3:
+        badges.append({
+            "icon": "⚡",
+            "title": "Big Day",
+            "description": "Had 3 chores approved today."
+        })
+
     if child.coins >= 100:
         badges.append({
             "icon": "💰",
             "title": "100 Coin Club",
             "description": "Saved up 100 coins."
+        })
+
+    if child.coins >= 250:
+        badges.append({
+            "icon": "🏦",
+            "title": "Super Saver",
+            "description": "Saved up 250 coins."
         })
 
     if bathroom_count >= 5:
@@ -255,6 +308,34 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
             "description": "Helped water plants 3 times."
         })
 
+    if kitchen_count >= 5:
+        badges.append({
+            "icon": "🍳",
+            "title": "Kitchen Captain",
+            "description": "Completed 5 kitchen chores."
+        })
+
+    if bedroom_count >= 5:
+        badges.append({
+            "icon": "🛏️",
+            "title": "Room Reset",
+            "description": "Completed 5 bedroom chores."
+        })
+
+    if trash_count >= 5:
+        badges.append({
+            "icon": "🗑️",
+            "title": "Trash Tackler",
+            "description": "Handled trash chores 5 times."
+        })
+
+    if breakfast_count >= 5:
+        badges.append({
+            "icon": "🥣",
+            "title": "Breakfast Boss",
+            "description": "Finished breakfast chores 5 times."
+        })
+
     locked_badges = [
         {
             "icon": "❓",
@@ -273,7 +354,13 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         }
     ]
 
+    completed_goal_reward = None
     goal_reward = child.goal_reward if child and child.goal_reward and child.goal_reward.active else None
+    if goal_reward and child.coins >= goal_reward.coin_cost:
+        completed_goal_reward = goal_reward
+        child.goal_reward_id = None
+        goal_reward = None
+        await db.commit()
     goal_progress_percent = 0
 
     if goal_reward and goal_reward.coin_cost > 0:
@@ -289,14 +376,15 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         "affordable_rewards": affordable_rewards,
         "almost_rewards": almost_rewards,
         "save_up_rewards": save_up_rewards,
+        "reward_progress": reward_progress,
         "goal_reward": goal_reward,
+        "completed_goal_reward": completed_goal_reward,
         "goal_progress_percent": goal_progress_percent,
         "badges": badges,
         "locked_badges": locked_badges,
         "pending_chores": pending_chores,
         "pending_rewards": pending_rewards,
         "game_tickets": child.game_tickets or 0,
-        "treasure_high_score": child.treasure_high_score or 0,
         "play_game": play_game,
         "switch_reward": switch_reward,
         "switch_requirements": switch_requirements,
@@ -347,34 +435,26 @@ async def start_game(db: AsyncSession = Depends(get_db)):
     if not child or (child.game_tickets or 0) < 1:
         return RedirectResponse(url="/kid?tab=games", status_code=303)
 
+    plinko_slots = [
+        {"slot": 0, "coins": 1, "weight": 24},
+        {"slot": 1, "coins": 2, "weight": 18},
+        {"slot": 2, "coins": 1, "weight": 24},
+        {"slot": 3, "coins": 3, "weight": 12},
+        {"slot": 4, "coins": 1, "weight": 16},
+        {"slot": 5, "coins": 5, "weight": 4},
+        {"slot": 6, "coins": 0, "weight": 2},
+    ]
+    prize = random.choices(plinko_slots, weights=[item["weight"] for item in plinko_slots], k=1)[0]
+
     child.game_tickets -= 1
+    child.coins += prize["coins"]
     child.game_round_ready = True
     await db.commit()
-    return RedirectResponse(url="/kid?tab=games&play=1", status_code=303)
+    return RedirectResponse(
+        url=f"/kid?tab=games&play=1&prize={prize['coins']}&slot={prize['slot']}",
+        status_code=303,
+    )
 
-
-@router.post("/kid/game/treasure-score")
-async def save_treasure_score(
-    score: int = Form(...),
-    db: AsyncSession = Depends(get_db)
-):
-    """Keep each child's best Treasure Dash score."""
-    result = await db.execute(select(Child))
-    child = result.scalar_one_or_none()
-    if not child:
-        return JSONResponse({"high_score": 0, "is_new_high_score": False})
-
-    safe_score = max(0, min(score, 999))
-    previous_high_score = child.treasure_high_score or 0
-    is_new_high_score = safe_score > previous_high_score
-    if is_new_high_score:
-        child.treasure_high_score = safe_score
-        await db.commit()
-
-    return JSONResponse({
-        "high_score": child.treasure_high_score or 0,
-        "is_new_high_score": is_new_high_score,
-    })
 
 @router.post("/kid/reward/goal")
 async def set_reward_goal(

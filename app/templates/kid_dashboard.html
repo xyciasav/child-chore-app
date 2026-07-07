@@ -66,7 +66,18 @@
                 <span class="coin-amount">{{ child.coins|int }}</span>
                 <span class="coin-label">coins</span>
             </div>
-            {% if goal_reward %}
+            {% if completed_goal_reward %}
+            <div class="saving-goal-card saving-goal-card-complete">
+                <div class="saving-goal-header">
+                    <span class="saving-goal-icon">🎉</span>
+                    <div>
+                        <span class="saving-goal-label">Goal ready</span>
+                        <h2>{{ completed_goal_reward.title }}</h2>
+                    </div>
+                </div>
+                <p class="saving-goal-ready">You have enough coins. Request it, then pick a new goal!</p>
+            </div>
+            {% elif goal_reward %}
             <div class="saving-goal-card">
                 <div class="saving-goal-header">
                     <span class="saving-goal-icon">🎯</span>
@@ -121,11 +132,24 @@
     </div>
 
     <div id="kid-chores" class="kid-tab-content">
+    <section class="section chore-page-hero">
+        <div>
+            <span class="daily-switch-eyebrow">Mission board</span>
+            <h2>Pick one helpful thing</h2>
+            <p>Finish a chore, send it for approval, and earn coins when it is checked off.</p>
+        </div>
+        <div class="chore-stats" aria-label="Chore status summary">
+            <span><strong>{{ chore_groups|length }}</strong> rooms</span>
+            <span><strong>{{ chores|length }}</strong> chores</span>
+            <span><strong>{{ pending_chores|length }}</strong> waiting</span>
+        </div>
+    </section>
+
     <!-- Random Chore Spinner -->
     <section class="section">
-        <div class="spinner-box">
+        <div class="spinner-box mission-picker">
             <h2>Need a mission?</h2>
-            <p>Tap the button and let the chore wheel pick for you!</p>
+            <p>Tap the button and let the chore wheel pick for you.</p>
 
             <button type="button" class="btn btn-primary" id="random-chore-btn">
                 🎲 Pick a Chore for Me
@@ -145,7 +169,7 @@
     </section>
 
     <!-- Active Chores Section -->
-    <section class="section">
+    <section class="section chores-board">
         <h2>My Chores</h2>
         {% for group in chore_groups %}
         <div class="room-section">
@@ -153,9 +177,12 @@
         <div class="chore-grid">
             {% for chore in group.chores %}
             <div class="chore-card" data-chore-title="{{ chore.title }}" data-chore-room="{{ group.room }}" data-chore-coins="{{ chore.coin_value }}">
+                <div class="chore-card-top">
+                    <span class="room-pill">{{ group.room }}</span>
+                    <span class="coin-pill">{{ chore.coin_value|int }} 🪙</span>
+                </div>
                 <h3>{{ chore.title }}</h3>
                 <p class="chore-description">{{ chore.description }}</p>
-                <div class="chore-reward">{{ chore.coin_value|int }} 🪙</div>
                 <form action="/kid/chore/submit" method="post" class="chore-form">
                     <input type="hidden" name="chore_id" value="{{ chore.id }}">
                     <button type="submit" class="btn btn-primary">I Did This!</button>
@@ -188,7 +215,26 @@
 
     <div id="kid-rewards" class="kid-tab-content">
         <!-- Rewards Section -->
-        <section class="section">
+        <section class="section rewards-page-hero">
+            <div>
+                <span class="daily-switch-eyebrow">Reward store</span>
+                <h2>Choose what to save for next</h2>
+                <p>You have <strong>{{ child.coins|int }} coins</strong>. Ready rewards can be requested now.</p>
+            </div>
+            {% if completed_goal_reward %}
+            <div class="goal-nudge">
+                <strong>{{ completed_goal_reward.title }} is ready.</strong>
+                <span>Request it below, then set a new goal.</span>
+            </div>
+            {% elif not goal_reward %}
+            <div class="goal-nudge">
+                <strong>No saving goal selected.</strong>
+                <span>Pick any reward as your next target.</span>
+            </div>
+            {% endif %}
+        </section>
+
+        <section class="section reward-store">
             <h2>Rewards 🎁</h2>
 
             {% if affordable_rewards %}
@@ -196,9 +242,13 @@
             <div class="reward-grid">
                 {% for reward in affordable_rewards %}
                 <div class="reward-card reward-card-ready">
+                    <div class="reward-card-top">
+                        <span class="reward-status-pill">Ready</span>
+                        <span class="reward-cost">{{ reward.coin_cost|int }} 🪙</span>
+                    </div>
                     <h3>{{ reward.title }}</h3>
                     <p class="reward-description">{{ reward.description }}</p>
-                    <div class="reward-cost">{{ reward.coin_cost|int }} 🪙</div>
+                    <div class="reward-progress" aria-hidden="true"><span style="width: {{ reward_progress[reward.id] }}%;"></span></div>
 
                     <form action="/kid/reward/request" method="post" class="reward-form">
                         <input type="hidden" name="reward_id" value="{{ reward.id }}">
@@ -227,9 +277,13 @@
             <div class="reward-grid">
                 {% for reward in almost_rewards %}
                 <div class="reward-card">
+                    <div class="reward-card-top">
+                        <span class="reward-status-pill">Close</span>
+                        <span class="reward-cost">{{ reward.coin_cost|int }} 🪙</span>
+                    </div>
                     <h3>{{ reward.title }}</h3>
                     <p class="reward-description">{{ reward.description }}</p>
-                    <div class="reward-cost">{{ reward.coin_cost|int }} 🪙</div>
+                    <div class="reward-progress" aria-hidden="true"><span style="width: {{ reward_progress[reward.id] }}%;"></span></div>
                     <p class="reward-needed">{{ (reward.coin_cost - child.coins)|int }} more coins needed</p>
 
                     <form action="/kid/reward/request" method="post" class="reward-form">
@@ -259,9 +313,13 @@
             <div class="reward-grid">
                 {% for reward in save_up_rewards %}
                 <div class="reward-card">
+                    <div class="reward-card-top">
+                        <span class="reward-status-pill">Save up</span>
+                        <span class="reward-cost">{{ reward.coin_cost|int }} 🪙</span>
+                    </div>
                     <h3>{{ reward.title }}</h3>
                     <p class="reward-description">{{ reward.description }}</p>
-                    <div class="reward-cost">{{ reward.coin_cost|int }} 🪙</div>
+                    <div class="reward-progress" aria-hidden="true"><span style="width: {{ reward_progress[reward.id] }}%;"></span></div>
                     <p class="reward-needed">{{ (reward.coin_cost - child.coins)|int }} more coins needed</p>
 
                     <form action="/kid/reward/request" method="post" class="reward-form">
@@ -308,8 +366,8 @@
             <div class="fun-zone-heading">
                 <div>
                     <span class="daily-switch-eyebrow">Approval rewards</span>
-                    <h2>Fun Zone</h2>
-                    <p>Every chore your parent approves earns one play pass.</p>
+                    <h2>Plinko Drop</h2>
+                    <p>Every approved chore earns one play pass. Drop a chip and see where it lands.</p>
                 </div>
                 <div class="game-ticket-count" aria-label="Available play passes">
                     <strong>{{ game_tickets }}</strong>
@@ -317,36 +375,42 @@
                 </div>
             </div>
 
-            <div class="game-card">
-                <div class="game-card-art" aria-hidden="true">💎</div>
+            <div class="game-card plinko-intro">
+                <div class="game-card-art" aria-hidden="true">●</div>
                 <div>
-                    <h3>Treasure Dash</h3>
-                    <p>Collect gems, dodge the slime, and beat the 45-second clock.</p>
-                    <p class="game-high-score">High score: <strong id="treasure-high-score">{{ treasure_high_score }}</strong> gems</p>
+                    <h3>Chance Drop</h3>
+                    <p>Mostly tiny wins, sometimes a bigger surprise. No racing, no controls, just the drop.</p>
                 </div>
                 <form action="/kid/game/start" method="post" class="game-start-form">
                     <button type="submit" class="btn btn-primary" {% if not game_tickets %}disabled{% endif %}>
-                        {% if game_tickets %}Use a Play Pass{% else %}Get a Chore Approved{% endif %}
+                        {% if game_tickets %}Drop a Chip{% else %}Get a Chore Approved{% endif %}
                     </button>
                 </form>
             </div>
 
-            <div id="treasure-game" class="treasure-game" {% if not play_game %}hidden{% endif %}>
-                <div class="treasure-game-header">
-                    <span>Treasure Dash</span>
-                    <strong><span id="treasure-score">0</span> gems</strong>
-                    <strong id="treasure-hearts" aria-label="3 hearts">❤️❤️❤️</strong>
-                    <strong id="treasure-powerup" class="treasure-powerup" hidden>⭐ Slime frozen!</strong>
-                    <strong><span id="treasure-time">45</span>s</strong>
+            <div id="plinko-game" class="plinko-game" {% if not play_game %}hidden{% endif %}>
+                <div class="plinko-header">
+                    <span>Plinko Drop</span>
+                    <strong id="plinko-status">Dropping...</strong>
                 </div>
-                <div id="treasure-game-board" class="treasure-game-board" aria-label="Treasure Dash game board"></div>
-                <div class="treasure-controls" aria-label="Treasure Dash movement controls">
-                    <button type="button" data-move="up" aria-label="Move up">▲</button>
-                    <button type="button" data-move="left" aria-label="Move left">◀</button>
-                    <button type="button" data-move="down" aria-label="Move down">▼</button>
-                    <button type="button" data-move="right" aria-label="Move right">▶</button>
+                <div id="plinko-board" class="plinko-board" aria-label="Plinko board">
+                    <span id="plinko-chip" class="plinko-chip"></span>
+                    {% for row in range(6) %}
+                        {% for peg in range(row + 3) %}
+                        <span class="plinko-peg" style="left: {{ ((peg + 1) * 100 / (row + 4))|round(2) }}%; top: {{ 14 + (row * 10) }}%;"></span>
+                        {% endfor %}
+                    {% endfor %}
+                    <div class="plinko-slots" aria-hidden="true">
+                        <span>1 🪙</span>
+                        <span>2 🪙</span>
+                        <span>1 🪙</span>
+                        <span>3 🪙</span>
+                        <span>1 🪙</span>
+                        <span>5 🪙</span>
+                        <span>0</span>
+                    </div>
                 </div>
-                <p id="treasure-game-message" class="treasure-game-message">Swipe or use the arrows to start collecting gems!</p>
+                <p id="plinko-message" class="plinko-message">The chip is bouncing...</p>
             </div>
         </section>
     </div>
@@ -447,228 +511,51 @@ document.addEventListener('visibilitychange', () => {
     if (!document.hidden) refreshKidDashboardWhenChanged();
 });
 
-const treasureGame = document.getElementById('treasure-game');
-const treasureBoard = document.getElementById('treasure-game-board');
-const treasureScore = document.getElementById('treasure-score');
-const treasureTime = document.getElementById('treasure-time');
-const treasureHearts = document.getElementById('treasure-hearts');
-const treasurePowerup = document.getElementById('treasure-powerup');
-const treasureMessage = document.getElementById('treasure-game-message');
+const plinkoGame = document.getElementById('plinko-game');
+const plinkoChip = document.getElementById('plinko-chip');
+const plinkoStatus = document.getElementById('plinko-status');
+const plinkoMessage = document.getElementById('plinko-message');
 
-function startTreasureDash() {
-    if (!treasureGame || treasureGame.hidden || !treasureBoard) {
+function startPlinkoDrop() {
+    if (!plinkoGame || plinkoGame.hidden || !plinkoChip) {
         return;
     }
 
     const gameUrl = new URL(window.location);
+    const prizeCoins = Number(gameUrl.searchParams.get('prize') || 0);
+    const prizeSlot = Number(gameUrl.searchParams.get('slot') || 0);
     gameUrl.searchParams.delete('play');
+    gameUrl.searchParams.delete('prize');
+    gameUrl.searchParams.delete('slot');
     window.history.replaceState({}, '', gameUrl);
 
-    const boardSize = 9;
-    let score = 0;
-    let timeLeft = 45;
-    let hearts = 3;
-    let gameOver = false;
-    let player = { x: 0, y: 8 };
-    let slime = { x: 8, y: 0 };
-    let gem = { x: 4, y: 4 };
-    let freezeStar = null;
-    let slimeFrozenUntil = 0;
-    let touchStart = null;
-    const obstacles = [
-        { x: 2, y: 1, icon: '🌲' }, { x: 5, y: 1, icon: '🪨' },
-        { x: 7, y: 2, icon: '🌲' }, { x: 1, y: 3, icon: '🪨' },
-        { x: 4, y: 3, icon: '🌲' }, { x: 6, y: 5, icon: '🌲' },
-        { x: 2, y: 6, icon: '🪨' }, { x: 5, y: 7, icon: '🌲' },
-    ];
+    const result = {
+        slot: Number.isFinite(prizeSlot) ? Math.max(0, Math.min(6, prizeSlot)) : 0,
+        label: prizeCoins === 1 ? '1 coin' : prizeCoins > 1 ? `${prizeCoins} coins` : 'no coins this time',
+    };
 
-    treasureScore.textContent = score;
-    treasureTime.textContent = timeLeft;
-    treasureHearts.textContent = '❤️'.repeat(hearts);
-    treasurePowerup.hidden = true;
-    treasureMessage.textContent = 'Swipe or use the arrows to start collecting gems!';
-    treasureBoard.replaceChildren();
+    const jitter = (Math.random() - 0.5) * 4;
+    const finalLeft = 7 + result.slot * 14.3 + jitter;
+    plinkoChip.style.setProperty('--final-left', `${finalLeft}%`);
+    plinkoChip.classList.remove('is-dropping');
+    void plinkoChip.offsetWidth;
+    plinkoChip.classList.add('is-dropping');
 
-    const playerToken = document.createElement('span');
-    playerToken.className = 'treasure-token treasure-player';
-    playerToken.textContent = '🧭';
-    const slimeToken = document.createElement('span');
-    slimeToken.className = 'treasure-token treasure-slime';
-    slimeToken.textContent = '👾';
-    const gemToken = document.createElement('span');
-    gemToken.className = 'treasure-token treasure-gem';
-    gemToken.textContent = '💎';
-    const freezeToken = document.createElement('span');
-    freezeToken.className = 'treasure-token treasure-freeze';
-    freezeToken.textContent = '⭐';
-    freezeToken.hidden = true;
-    obstacles.forEach(obstacle => {
-        const obstacleToken = document.createElement('span');
-        obstacleToken.className = 'treasure-obstacle';
-        obstacleToken.textContent = obstacle.icon;
-        obstacleToken.style.left = `${((obstacle.x + 0.5) / boardSize) * 100}%`;
-        obstacleToken.style.top = `${((obstacle.y + 0.5) / boardSize) * 100}%`;
-        treasureBoard.appendChild(obstacleToken);
-    });
-    treasureBoard.append(playerToken, slimeToken, gemToken, freezeToken);
+    plinkoStatus.textContent = 'Dropping...';
+    plinkoMessage.textContent = 'The chip is bouncing...';
 
-    const sameSpot = (first, second) => first.x === second.x && first.y === second.y;
-    const isBlocked = position => obstacles.some(obstacle => sameSpot(obstacle, position));
-    const placeToken = (token, position) => {
-        token.style.left = `${((position.x + 0.5) / boardSize) * 100}%`;
-        token.style.top = `${((position.y + 0.5) / boardSize) * 100}%`;
-    };
-    const randomOpenSpot = (extraSpots = []) => {
-        let next;
-        do {
-            next = {
-                x: Math.floor(Math.random() * boardSize),
-                y: Math.floor(Math.random() * boardSize),
-            };
-        } while (
-            sameSpot(next, player)
-            || sameSpot(next, slime)
-            || isBlocked(next)
-            || extraSpots.some(spot => sameSpot(next, spot))
-        );
-        return next;
-    };
-    const renderBoard = () => {
-        placeToken(playerToken, player);
-        placeToken(slimeToken, slime);
-        placeToken(gemToken, gem);
-        if (freezeStar) {
-            freezeToken.hidden = false;
-            placeToken(freezeToken, freezeStar);
-        } else {
-            freezeToken.hidden = true;
-        }
-    };
-    const slimeCaughtYou = () => {
-        hearts -= 1;
-        treasureHearts.textContent = '❤️'.repeat(hearts) || '💔';
-        if (hearts <= 0) {
-            finishGame('The slime got all three hearts. Try again next time!');
-            return;
-        }
-        treasureMessage.textContent = `Slime got you! ${hearts} heart${hearts === 1 ? '' : 's'} left.`;
-        player = { x: 0, y: 8 };
-        slime = randomOpenSpot([gem, freezeStar].filter(Boolean));
-    };
-    const movePlayer = (xStep, yStep) => {
-        if (gameOver) return;
-        const next = { x: player.x + xStep, y: player.y + yStep };
-        if (next.x < 0 || next.x >= boardSize || next.y < 0 || next.y >= boardSize || isBlocked(next)) return;
-        player = next;
-        if (sameSpot(player, gem)) {
-            score += 1;
-            treasureScore.textContent = score;
-            treasureMessage.textContent = 'Gem found! Keep exploring!';
-            gem = randomOpenSpot([freezeStar].filter(Boolean));
-            if (score % 3 === 0 && !freezeStar) {
-                freezeStar = randomOpenSpot([gem]);
-                treasureMessage.textContent = 'A freeze star appeared! Grab it to stop the slime.';
-            }
-        }
-        if (freezeStar && sameSpot(player, freezeStar)) {
-            freezeStar = null;
-            slimeFrozenUntil = Date.now() + 5000;
-            treasurePowerup.hidden = false;
-            treasurePowerup.textContent = '⭐ Slime frozen: 5s';
-            treasureMessage.textContent = 'Freeze star! The slime is stuck for 5 seconds.';
-        }
-        if (sameSpot(player, slime)) slimeCaughtYou();
-        renderBoard();
-    };
-    const moveSlime = () => {
-        if (gameOver) return;
-        if (Date.now() < slimeFrozenUntil) {
-            treasurePowerup.hidden = false;
-            treasurePowerup.textContent = `⭐ Slime frozen: ${Math.ceil((slimeFrozenUntil - Date.now()) / 1000)}s`;
-            return;
-        }
-        treasurePowerup.hidden = true;
-        const options = [
-            { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 },
-        ].filter(step => {
-            const next = { x: slime.x + step.x, y: slime.y + step.y };
-            return next.x >= 0 && next.x < boardSize && next.y >= 0 && next.y < boardSize && !isBlocked(next);
+    window.setTimeout(() => {
+        plinkoStatus.textContent = result.label === 'no coins this time' ? 'So close' : `Won ${result.label}`;
+        plinkoMessage.textContent = result.label === 'no coins this time'
+            ? 'No coin prize this drop, but the play pass did its job.'
+            : `Nice drop: ${result.label}! Your coin balance already includes it.`;
+        document.querySelectorAll('.plinko-slots span').forEach((slot, index) => {
+            slot.classList.toggle('is-winning-slot', index === result.slot);
         });
-        options.sort((first, second) => {
-            const firstDistance = Math.abs(slime.x + first.x - player.x) + Math.abs(slime.y + first.y - player.y);
-            const secondDistance = Math.abs(slime.x + second.x - player.x) + Math.abs(slime.y + second.y - player.y);
-            return firstDistance - secondDistance + (Math.random() - 0.5) * 2;
-        });
-        const step = options[0];
-        slime = { x: slime.x + step.x, y: slime.y + step.y };
-        if (sameSpot(slime, player)) slimeCaughtYou();
-        renderBoard();
-    };
-    const finishGame = (message = null) => {
-        gameOver = true;
-        window.clearInterval(timer);
-        window.clearInterval(slimeTimer);
-        treasureMessage.textContent = message || `Treasure secured: ${score} gem${score === 1 ? '' : 's'}!`;
-        document.querySelectorAll('.treasure-controls button').forEach(button => button.disabled = true);
-        saveTreasureScore(score);
-    };
-
-    const saveTreasureScore = async finalScore => {
-        try {
-            const response = await fetch('/kid/game/treasure-score', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({ score: finalScore }),
-            });
-            if (!response.ok) return;
-            const result = await response.json();
-            const highScore = document.getElementById('treasure-high-score');
-            if (highScore) highScore.textContent = result.high_score;
-            if (result.is_new_high_score) {
-                treasureMessage.textContent = `🏆 New high score: ${result.high_score} gems!`;
-            }
-        } catch (_) {
-            // The current round still finishes normally if saving the score fails.
-        }
-    };
-
-    const moveMap = {
-        up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0],
-    };
-    document.querySelectorAll('.treasure-controls button').forEach(button => {
-        button.disabled = false;
-        button.onclick = () => movePlayer(...moveMap[button.dataset.move]);
-    });
-    treasureBoard.ontouchstart = event => {
-        const touch = event.changedTouches[0];
-        touchStart = { x: touch.clientX, y: touch.clientY };
-    };
-    treasureBoard.ontouchend = event => {
-        if (!touchStart) return;
-        const touch = event.changedTouches[0];
-        const xDistance = touch.clientX - touchStart.x;
-        const yDistance = touch.clientY - touchStart.y;
-        touchStart = null;
-        if (Math.max(Math.abs(xDistance), Math.abs(yDistance)) < 20) return;
-        if (Math.abs(xDistance) > Math.abs(yDistance)) {
-            movePlayer(xDistance > 0 ? 1 : -1, 0);
-        } else {
-            movePlayer(0, yDistance > 0 ? 1 : -1);
-        }
-    };
-
-    renderBoard();
-    const slimeTimer = window.setInterval(moveSlime, 720);
-    const timer = window.setInterval(() => {
-        timeLeft -= 1;
-        treasureTime.textContent = timeLeft;
-        if (timeLeft <= 0) {
-            finishGame();
-        }
-    }, 1000);
+    }, 1900);
 }
 
-startTreasureDash();
+startPlinkoDrop();
 
 function openConfirmModal({ title, message, buttonText, form, actionType }) {
     pendingForm = form;
@@ -780,6 +667,8 @@ confirmSubmit.addEventListener('click', () => {
         confirmSubmit.disabled = true;
         confirmSubmit.textContent = 'Sending Request...';
         confirmModal.classList.add('is-celebrating');
+        pendingForm.closest('.daily-switch-request-card')?.classList.add('is-submitting');
+        pendingForm.querySelector('button[type="submit"]')?.setAttribute('disabled', 'disabled');
         playRewardSound();
         setTimeout(() => pendingForm.submit(), 750);
     } else {

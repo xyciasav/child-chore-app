@@ -317,6 +317,66 @@ async def edit_chore(
     return RedirectResponse(url=ADMIN_TABS["manage_chores"], status_code=303)
 
 
+@router.post("/admin/chore/bulk-edit")
+async def bulk_edit_chores(
+    request: Request,
+    chore_id: list[int] = Form([]),
+    title: list[str] = Form([]),
+    room: list[str] = Form([]),
+    description: list[str] = Form([]),
+    coin_value: list[float] = Form([]),
+    active_ids: list[int] = Form([]),
+    db: AsyncSession = Depends(get_db)
+):
+    """Save edits for all chore rows shown on the manage page."""
+    redirect = check_admin_cookie(request)
+    if redirect:
+        return redirect
+
+    if not chore_id:
+        return RedirectResponse(url=ADMIN_TABS["manage_chores"], status_code=303)
+
+    chores_result = await db.execute(select(Chore).where(Chore.id.in_(chore_id)))
+    chores_by_id = {chore.id: chore for chore in chores_result.scalars().all()}
+    active_id_set = set(active_ids)
+
+    row_count = min(len(chore_id), len(title), len(room), len(description), len(coin_value))
+    for index in range(row_count):
+        current_id = chore_id[index]
+        chore = chores_by_id.get(current_id)
+        if not chore:
+            continue
+
+        chore.title = title[index].strip() or chore.title
+        chore.room = room[index].strip() or "General"
+        chore.description = description[index]
+        chore.coin_value = coin_value[index]
+        chore.active = current_id in active_id_set
+
+    await db.commit()
+    return RedirectResponse(url=ADMIN_TABS["manage_chores"], status_code=303)
+
+
+@router.post("/admin/chore/bulk-delete")
+async def bulk_delete_chores(
+    request: Request,
+    selected_ids: list[int] = Form([]),
+    db: AsyncSession = Depends(get_db)
+):
+    """Archive selected chores so existing submission history remains intact."""
+    redirect = check_admin_cookie(request)
+    if redirect:
+        return redirect
+
+    if selected_ids:
+        chores_result = await db.execute(select(Chore).where(Chore.id.in_(selected_ids)))
+        for chore in chores_result.scalars().all():
+            chore.active = False
+        await db.commit()
+
+    return RedirectResponse(url=ADMIN_TABS["manage_chores"], status_code=303)
+
+
 @router.post("/admin/reward/add")
 async def add_reward(
     request: Request,
@@ -339,6 +399,65 @@ async def add_reward(
     db.add(reward)
     await db.commit()
     return RedirectResponse(url=ADMIN_TABS["manage_rewards"], status_code=303)
+
+
+@router.post("/admin/reward/bulk-edit")
+async def bulk_edit_rewards(
+    request: Request,
+    reward_id: list[int] = Form([]),
+    title: list[str] = Form([]),
+    description: list[str] = Form([]),
+    coin_cost: list[float] = Form([]),
+    active_ids: list[int] = Form([]),
+    db: AsyncSession = Depends(get_db)
+):
+    """Save edits for all reward rows shown on the manage page."""
+    redirect = check_admin_cookie(request)
+    if redirect:
+        return redirect
+
+    if not reward_id:
+        return RedirectResponse(url=ADMIN_TABS["manage_rewards"], status_code=303)
+
+    rewards_result = await db.execute(select(Reward).where(Reward.id.in_(reward_id)))
+    rewards_by_id = {reward.id: reward for reward in rewards_result.scalars().all()}
+    active_id_set = set(active_ids)
+
+    row_count = min(len(reward_id), len(title), len(description), len(coin_cost))
+    for index in range(row_count):
+        current_id = reward_id[index]
+        reward = rewards_by_id.get(current_id)
+        if not reward:
+            continue
+
+        reward.title = title[index].strip() or reward.title
+        reward.description = description[index]
+        reward.coin_cost = coin_cost[index]
+        reward.active = current_id in active_id_set
+
+    await db.commit()
+    return RedirectResponse(url=ADMIN_TABS["manage_rewards"], status_code=303)
+
+
+@router.post("/admin/reward/bulk-delete")
+async def bulk_delete_rewards(
+    request: Request,
+    selected_ids: list[int] = Form([]),
+    db: AsyncSession = Depends(get_db)
+):
+    """Archive selected rewards so existing redemption history remains intact."""
+    redirect = check_admin_cookie(request)
+    if redirect:
+        return redirect
+
+    if selected_ids:
+        rewards_result = await db.execute(select(Reward).where(Reward.id.in_(selected_ids)))
+        for reward in rewards_result.scalars().all():
+            reward.active = False
+        await db.commit()
+
+    return RedirectResponse(url=ADMIN_TABS["manage_rewards"], status_code=303)
+
 
 @router.post("/admin/reward/edit")
 async def edit_reward(

@@ -101,62 +101,56 @@
             </form>
         </div>
 
-        <!-- Existing Chores List -->
-        <div class="manage-list">
-            {% for chore in chores %}
-            <div class="manage-item">
-                <div class="manage-info">
-                    <strong>{{ chore.title }}</strong>
-                    <span class="room-badge">{{ chore.room or 'General' }}</span>
-                    <span class="coin-value">{{ chore.coin_value|int }} 🪙</span>
-                    <span class="status-badge status-{{ 'active' if chore.active else 'inactive' }}">
-                        {{ 'Active' if chore.active else 'Inactive' }}
-                    </span>
-                </div>
-                <div class="manage-actions">
-                    <button type="button" class="btn btn-outline edit-chore-btn" data-chore-id="{{ chore.id }}">
-                        Edit
-                    </button>
-                    <form action="/admin/chore/delete" method="post" class="inline-form">
-                        <input type="hidden" name="chore_id" value="{{ chore.id }}">
-                        <button type="submit" class="btn btn-danger" 
-                                onclick="return confirm('Archive this chore? It will be hidden from the kid dashboard but history will stay.')">
-                            Archive
-                        </button>
-                    </form>
-                </div>
+        <!-- Existing Chores Bulk Editor -->
+        <form action="/admin/chore/bulk-edit" method="post" class="bulk-edit-form">
+        <div class="bulk-edit-toolbar">
+            <div>
+                <h3>Bulk Edit Chores</h3>
+                <p>Edit rows directly, then save everything at once.</p>
             </div>
-            <form action="/admin/chore/edit" method="post" class="admin-form edit-chore-form" id="edit-chore-{{ chore.id }}">
+            <div class="bulk-edit-actions">
+                <button type="submit" class="btn btn-primary">Save All Changes</button>
+                <button type="submit" class="btn btn-danger"
+                        formaction="/admin/chore/bulk-delete"
+                        onclick="return confirm('Delete selected chores? They will be archived from the kid dashboard, but history will stay.')">
+                    Delete Selected
+                </button>
+            </div>
+        </div>
+        <div class="bulk-edit-list">
+            {% for chore in chores %}
+            <div class="bulk-edit-row">
+                <label class="bulk-select">
+                    <input type="checkbox" name="selected_ids" value="{{ chore.id }}">
+                    <span class="sr-only">Select {{ chore.title }}</span>
+                </label>
                 <input type="hidden" name="chore_id" value="{{ chore.id }}">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="edit-chore-title-{{ chore.id }}">Title:</label>
-                        <input type="text" id="edit-chore-title-{{ chore.id }}" name="title" value="{{ chore.title }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-chore-room-{{ chore.id }}">Room:</label>
-                        <input type="text" id="edit-chore-room-{{ chore.id }}" name="room" value="{{ chore.room or 'General' }}" list="room-suggestions" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-chore-coin-value-{{ chore.id }}">Coins:</label>
-                        <input type="number" id="edit-chore-coin-value-{{ chore.id }}" name="coin_value" step="1" value="{{ chore.coin_value }}" required>
-                    </div>
+                <div class="form-group">
+                    <label for="bulk-chore-title-{{ chore.id }}">Title</label>
+                    <input type="text" id="bulk-chore-title-{{ chore.id }}" name="title" value="{{ chore.title }}" required>
                 </div>
                 <div class="form-group">
-                    <label for="edit-chore-description-{{ chore.id }}">Description:</label>
-                    <textarea id="edit-chore-description-{{ chore.id }}" name="description" rows="2">{{ chore.description }}</textarea>
+                    <label for="bulk-chore-room-{{ chore.id }}">Room</label>
+                    <input type="text" id="bulk-chore-room-{{ chore.id }}" name="room" value="{{ chore.room or 'General' }}" list="room-suggestions" required>
                 </div>
-                <label class="checkbox-row">
-                    <input type="checkbox" name="active" value="true" {% if chore.active %}checked{% endif %}>
+                <div class="form-group">
+                    <label for="bulk-chore-coins-{{ chore.id }}">Coins</label>
+                    <input type="number" id="bulk-chore-coins-{{ chore.id }}" name="coin_value" step="1" value="{{ chore.coin_value }}" required>
+                </div>
+                <div class="form-group bulk-description">
+                    <label for="bulk-chore-description-{{ chore.id }}">Description</label>
+                    <textarea id="bulk-chore-description-{{ chore.id }}" name="description" rows="2">{{ chore.description }}</textarea>
+                </div>
+                <label class="checkbox-row bulk-active">
+                    <input type="checkbox" name="active_ids" value="{{ chore.id }}" {% if chore.active %}checked{% endif %}>
                     Active
                 </label>
-                <div class="edit-form-actions">
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                    <button type="button" class="btn btn-outline cancel-edit-chore-btn" data-chore-id="{{ chore.id }}">Cancel</button>
-                </div>
-            </form>
+            </div>
+            {% else %}
+            <p class="empty-state">No chores yet.</p>
             {% endfor %}
         </div>
+        </form>
     </div>
 
     <datalist id="room-suggestions">
@@ -227,65 +221,52 @@
             </form>
         </div>
 
-    <!-- Existing Rewards List -->
-    <div class="manage-list">
-        {% for reward in rewards %}
-        <div class="manage-item">
-            <div class="manage-info">
-                <strong>{{ reward.title }}</strong>
-                <span class="coin-value">{{ reward.coin_cost|int }} 🪙</span>
-                <span class="status-badge status-{{ 'active' if reward.active else 'inactive' }}">
-                    {{ 'Active' if reward.active else 'Inactive' }}
-                </span>
-            </div>
-
-            <div class="manage-actions">
-                <button type="button" class="btn btn-outline edit-reward-btn" data-reward-id="{{ reward.id }}">
-                    Edit
-                </button>
-
-                <form action="/admin/reward/delete" method="post" class="inline-form">
-                    <input type="hidden" name="reward_id" value="{{ reward.id }}">
-                    <button type="submit" class="btn btn-danger"
-                            onclick="return confirm('Archive this reward? It will be hidden from the kid dashboard but history will stay.')">
-                        Archive
-                    </button>
-                </form>
-            </div>
+    <!-- Existing Rewards Bulk Editor -->
+    <form action="/admin/reward/bulk-edit" method="post" class="bulk-edit-form">
+    <div class="bulk-edit-toolbar">
+        <div>
+            <h3>Bulk Edit Rewards</h3>
+            <p>Edit rows directly, then save everything at once.</p>
         </div>
-
-        <form action="/admin/reward/edit" method="post" class="admin-form edit-chore-form edit-reward-form" id="edit-reward-{{ reward.id }}">
+        <div class="bulk-edit-actions">
+            <button type="submit" class="btn btn-primary">Save All Changes</button>
+            <button type="submit" class="btn btn-danger"
+                    formaction="/admin/reward/bulk-delete"
+                    onclick="return confirm('Delete selected rewards? They will be archived from the kid dashboard, but history will stay.')">
+                Delete Selected
+            </button>
+        </div>
+    </div>
+    <div class="bulk-edit-list">
+        {% for reward in rewards %}
+        <div class="bulk-edit-row bulk-edit-row-reward">
+            <label class="bulk-select">
+                <input type="checkbox" name="selected_ids" value="{{ reward.id }}">
+                <span class="sr-only">Select {{ reward.title }}</span>
+            </label>
             <input type="hidden" name="reward_id" value="{{ reward.id }}">
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="edit-reward-title-{{ reward.id }}">Title:</label>
-                    <input type="text" id="edit-reward-title-{{ reward.id }}" name="title" value="{{ reward.title }}" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="edit-reward-coin-cost-{{ reward.id }}">Coin Cost:</label>
-                    <input type="number" id="edit-reward-coin-cost-{{ reward.id }}" name="coin_cost" step="1" value="{{ reward.coin_cost }}" required>
-                </div>
-            </div>
-
             <div class="form-group">
-                <label for="edit-reward-description-{{ reward.id }}">Description:</label>
+                <label for="bulk-reward-title-{{ reward.id }}">Title</label>
+                <input type="text" id="bulk-reward-title-{{ reward.id }}" name="title" value="{{ reward.title }}" required>
+            </div>
+            <div class="form-group">
+                <label for="bulk-reward-cost-{{ reward.id }}">Coin Cost</label>
+                <input type="number" id="bulk-reward-cost-{{ reward.id }}" name="coin_cost" step="1" value="{{ reward.coin_cost }}" required>
+            </div>
+            <div class="form-group bulk-description">
+                <label for="edit-reward-description-{{ reward.id }}">Description</label>
                 <textarea id="edit-reward-description-{{ reward.id }}" name="description" rows="2">{{ reward.description }}</textarea>
             </div>
-
-            <label class="checkbox-row">
-                <input type="checkbox" name="active" value="true" {% if reward.active %}checked{% endif %}>
+            <label class="checkbox-row bulk-active">
+                <input type="checkbox" name="active_ids" value="{{ reward.id }}" {% if reward.active %}checked{% endif %}>
                 Active
             </label>
-
-            <div class="edit-form-actions">
-                <button type="submit" class="btn btn-primary">Save Changes</button>
-                <button type="button" class="btn btn-outline cancel-edit-reward-btn" data-reward-id="{{ reward.id }}">Cancel</button>
-            </div>
-        </form>
+        </div>
+        {% else %}
+        <p class="empty-state">No rewards yet.</p>
         {% endfor %}
     </div>
+    </form>
 </div>
 
     <!-- Children -->
