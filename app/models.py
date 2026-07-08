@@ -87,6 +87,17 @@ class DailyRoutineReset(Base):
     reset_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
+class CoinAdjustment(Base):
+    """A manual coin change with a visible reason."""
+    __tablename__ = "coin_adjustments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    child_id = Column(Integer, ForeignKey("children.id"), nullable=False)
+    amount = Column(Float, nullable=False)
+    reason = Column(String(500), default="")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 class Reward(Base):
     """A reward that children can redeem with coins."""
     __tablename__ = "rewards"

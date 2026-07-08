@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, joinedload
 
 from app.database import get_db
-from app.models import Child, Chore, ChoreSubmission, DailyRoutineReset, PlinkoSlot, Reward, RewardRedemption, ChoreStatus, RewardRedemptionStatus
+from app.models import Child, Chore, ChoreSubmission, CoinAdjustment, DailyRoutineReset, PlinkoSlot, Reward, RewardRedemption, ChoreStatus, RewardRedemptionStatus
 from app.core import templates
 
 router = APIRouter()
@@ -172,6 +172,14 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         .options(selectinload(ChoreSubmission.chore))
     )
     pending_chores = pending_chores_result.scalars().all()
+
+    recent_adjustments_result = await db.execute(
+        select(CoinAdjustment)
+        .where(CoinAdjustment.child_id == child.id)
+        .order_by(CoinAdjustment.created_at.desc())
+        .limit(5)
+    )
+    recent_adjustments = recent_adjustments_result.scalars().all()
 
     # Get pending reward redemptions for this child
     pending_rewards_result = await db.execute(
@@ -422,6 +430,7 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         "badges": badges,
         "locked_badges": locked_badges,
         "pending_chores": pending_chores,
+        "recent_adjustments": recent_adjustments,
         "pending_rewards": pending_rewards,
         "pending_reward_ids": pending_reward_ids,
         "game_tickets": child.game_tickets or 0,

@@ -370,6 +370,51 @@ footer {
     margin: 0.75rem 0;
 }
 
+.coin-notes {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    text-align: left;
+}
+
+.coin-notes h3 {
+    color: #2d3748;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.coin-note {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.65rem;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #f7fafc;
+}
+
+.coin-note strong {
+    color: #2d3748;
+}
+
+.coin-note span {
+    color: #4a5568;
+    font-size: 0.85rem;
+}
+
+.coin-note-negative {
+    border-color: #feb2b2;
+    background: #fff5f5;
+}
+
+.coin-note-negative strong {
+    color: #9b2c2c;
+}
+
+.coin-note-positive {
+    border-color: #9ae6b4;
+    background: #f0fff4;
+}
+
 .kid-reward-summary .saving-goal-card {
     margin: 1rem 0 0;
 }

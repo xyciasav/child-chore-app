@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 
 from app.database import get_db
 from app.models import (
-    Child, Chore, ChoreSubmission, DailyRoutineReset, PlinkoSlot, Reward, RewardRedemption,
+    Child, Chore, ChoreSubmission, CoinAdjustment, DailyRoutineReset, PlinkoSlot, Reward, RewardRedemption,
     ChoreStatus, RewardRedemptionStatus
 )
 from app.core import templates
@@ -704,6 +704,36 @@ async def award_coins(
     child = child_result.scalar_one_or_none()
     if child and amount > 0:
         child.coins += amount
+        await db.commit()
+
+    return RedirectResponse(url=ADMIN_TABS["children"], status_code=303)
+
+
+@router.post("/admin/coins/penalty")
+async def subtract_behavior_coins(
+    request: Request,
+    child_id: int = Form(...),
+    amount: float = Form(20.0),
+    reason: str = Form(...),
+    db: AsyncSession = Depends(get_db)
+):
+    """Subtract coins for behavior and record the reason for the child to see."""
+    redirect = check_admin_cookie(request)
+    if redirect:
+        return redirect
+
+    child_result = await db.execute(select(Child).where(Child.id == child_id))
+    child = child_result.scalar_one_or_none()
+    clean_reason = reason.strip()
+    penalty_amount = max(0, amount)
+
+    if child and penalty_amount > 0 and clean_reason:
+        child.coins -= penalty_amount
+        db.add(CoinAdjustment(
+            child_id=child.id,
+            amount=-penalty_amount,
+            reason=clean_reason,
+        ))
         await db.commit()
 
     return RedirectResponse(url=ADMIN_TABS["children"], status_code=303)

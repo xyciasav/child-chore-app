@@ -66,6 +66,17 @@
                 <span class="coin-amount">{{ child.coins|int }}</span>
                 <span class="coin-label">coins</span>
             </div>
+            {% if recent_adjustments %}
+            <div class="coin-notes">
+                <h3>Coin Notes</h3>
+                {% for adjustment in recent_adjustments %}
+                <div class="coin-note {% if adjustment.amount < 0 %}coin-note-negative{% else %}coin-note-positive{% endif %}">
+                    <strong>{{ adjustment.amount|int }} 🪙</strong>
+                    <span>{{ adjustment.reason }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
             {% if completed_goal_reward %}
             <div class="saving-goal-card saving-goal-card-complete">
                 <div class="saving-goal-header">

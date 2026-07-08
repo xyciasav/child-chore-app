@@ -339,6 +339,36 @@
             {% endif %}
         </div>
         <div class="admin-form-box">
+            <h3>Subtract Behavior Points</h3>
+            <p>Subtract coins and save a reason that appears on the kid dashboard.</p>
+            {% if children %}
+            <form action="/admin/coins/penalty" method="post" class="admin-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="penalty-child">Child:</label>
+                        <select id="penalty-child" name="child_id" required>
+                            {% for child in children %}
+                            <option value="{{ child.id }}">{{ child.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="penalty-amount">Coins to subtract:</label>
+                        <input type="number" id="penalty-amount" name="amount" min="1" step="1" value="20" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="penalty-reason">Reason:</label>
+                    <textarea id="penalty-reason" name="reason" rows="2" required placeholder="What happened?"></textarea>
+                </div>
+                <button type="submit" class="btn btn-danger"
+                        onclick="return confirm('Subtract these coins and show this reason on the kid dashboard?')">
+                    Subtract Points
+                </button>
+            </form>
+            {% endif %}
+        </div>
+        <div class="admin-form-box">
             <h3>Give Play Passes</h3>
             <p>Give game tickets directly for a bonus or a special occasion.</p>
             {% if children %}
