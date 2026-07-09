@@ -1895,3 +1895,400 @@ footer {
         min-width: 0;
     }
 }
+
+/* --- Admin Redesign --- */
+.admin-shell {
+    display: grid;
+    gap: 1rem;
+}
+
+.admin-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    border: 1px solid #d9e2ec;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 2px 12px rgba(45, 55, 72, 0.07);
+}
+
+.admin-hero h2 {
+    max-width: 720px;
+    margin: 0.15rem 0 0;
+    color: #1a202c;
+    font-size: 1.35rem;
+    line-height: 1.25;
+}
+
+.admin-eyebrow,
+.admin-section-label,
+.admin-mini-label {
+    display: inline-flex;
+    color: #667085;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.admin-hero-actions,
+.admin-panel-header,
+.bulk-edit-toolbar,
+.approval-actions,
+.manage-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.admin-hero-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.admin-metrics {
+    margin-bottom: 0;
+}
+
+.admin-metrics .metric-card {
+    border: 1px solid #d9e2ec;
+    border-top: 0;
+    box-shadow: 0 1px 8px rgba(45, 55, 72, 0.06);
+}
+
+.admin-metrics .metric-card-primary {
+    background: #1f2937;
+}
+
+.admin-metrics .metric-card-primary .metric-label,
+.admin-metrics .metric-card-primary strong {
+    color: #ffffff;
+}
+
+.admin-nav {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 0;
+    padding: 0.65rem;
+    border: 1px solid #d9e2ec;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 2px 12px rgba(45, 55, 72, 0.08);
+}
+
+.admin-nav .tab-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: #f7fafc;
+    color: #344054;
+    font-size: 0.88rem;
+    text-align: left;
+}
+
+.admin-nav .tab-btn strong {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 0.45rem;
+    border-radius: 999px;
+    background: #e2e8f0;
+    color: #344054;
+    font-size: 0.75rem;
+}
+
+.admin-nav .tab-btn:hover,
+.admin-nav .tab-btn.active {
+    border-color: #3182ce;
+    background: #ebf8ff;
+    color: #1a365d;
+}
+
+.admin-nav .tab-btn.active strong {
+    background: #2b6cb0;
+    color: #ffffff;
+}
+
+.admin-panel,
+.admin-form-box {
+    padding: 1rem;
+    border: 1px solid #d9e2ec;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 1px 8px rgba(45, 55, 72, 0.06);
+    margin-bottom: 1rem;
+}
+
+.admin-panel-muted {
+    background: #f7fafc;
+}
+
+.admin-panel-header {
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.admin-panel-header h2,
+.bulk-edit-toolbar h2 {
+    margin: 0.1rem 0 0;
+    color: #1a202c;
+    font-size: 1.08rem;
+    line-height: 1.25;
+}
+
+.admin-count-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    background: #eef2f6;
+    color: #344054;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.admin-grid-two {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+    gap: 1rem;
+}
+
+.admin-action-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.admin-stat-stack {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.admin-stat-stack span {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #4a5568;
+    font-weight: 700;
+}
+
+.admin-stat-stack strong {
+    color: #1a202c;
+    font-size: 1.15rem;
+}
+
+.approval-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.approval-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.9rem;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #3182ce;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: none;
+}
+
+.approval-info {
+    display: grid;
+    gap: 0.15rem;
+}
+
+.approval-info strong {
+    color: #1a202c;
+    font-size: 1rem;
+}
+
+.approval-info span:not(.admin-mini-label) {
+    color: #667085;
+    font-size: 0.9rem;
+}
+
+.admin-form {
+    gap: 0.85rem;
+}
+
+.form-row-compact {
+    grid-template-columns: minmax(180px, 1fr) minmax(140px, 0.75fr) 100px;
+}
+
+.bulk-edit-toolbar {
+    justify-content: space-between;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: transparent;
+}
+
+.bulk-edit-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.bulk-edit-list {
+    gap: 0.65rem;
+}
+
+.bulk-edit-row {
+    border-color: #d9e2ec;
+    box-shadow: none;
+}
+
+.bulk-edit-row-chore {
+    grid-template-columns: 34px minmax(150px, 1.15fr) minmax(120px, 0.65fr) 86px minmax(220px, 1.55fr) 88px;
+}
+
+.bulk-edit-row-reward {
+    grid-template-columns: 34px minmax(190px, 1.15fr) 100px minmax(260px, 1.65fr) 88px;
+}
+
+.bulk-edit-row.is-archived {
+    background: #f8fafc;
+    opacity: 0.72;
+}
+
+.bulk-edit-row .form-group label,
+.plinko-admin-row .form-group label {
+    color: #667085;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.bulk-select input,
+.bulk-active input,
+.checkbox-row input {
+    accent-color: #2b6cb0;
+}
+
+.child-balance-row {
+    display: grid;
+    grid-template-columns: minmax(180px, 0.8fr) minmax(320px, 1.2fr);
+    align-items: center;
+    gap: 1rem;
+    box-shadow: none;
+    border: 1px solid #e2e8f0;
+}
+
+.compact-set-form {
+    display: inline-flex;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.behavior-panel {
+    border-color: #feb2b2;
+}
+
+.danger-zone {
+    border-color: #feb2b2;
+    background: #fffafa;
+}
+
+.plinko-admin-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.plinko-admin-row {
+    background: #f8fafc;
+    border-color: #d9e2ec;
+}
+
+.plinko-admin-row strong {
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.login-box {
+    max-width: 420px;
+    margin: 3rem auto;
+    padding: 1.25rem;
+    border: 1px solid #d9e2ec;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 2px 12px rgba(45, 55, 72, 0.08);
+}
+
+.login-box h2 {
+    margin-bottom: 1rem;
+    color: #1a202c;
+}
+
+.login-form {
+    display: grid;
+    gap: 1rem;
+}
+
+@media (max-width: 980px) {
+    .admin-nav {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .admin-grid-two,
+    .admin-action-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .child-balance-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .admin-hero,
+    .admin-panel-header,
+    .bulk-edit-toolbar,
+    .approval-item {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .admin-hero-actions,
+    .approval-actions,
+    .bulk-edit-actions,
+    .manage-actions {
+        justify-content: stretch;
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .admin-nav {
+        position: static;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .admin-nav .tab-btn {
+        min-height: 52px;
+    }
+
+    .bulk-edit-row-chore,
+    .bulk-edit-row-reward,
+    .form-row-compact {
+        grid-template-columns: 1fr;
+    }
+}

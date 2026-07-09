@@ -1,19 +1,20 @@
 {% extends "base.html" %}
 
 {% block title %}Chore Tracker - Admin Login{% endblock %}
-{% block header %}🔐 Admin Login{% endblock %}
+{% block header %}Admin Login{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="login-box">
-        <h2>Parent Access</h2>
+        <span class="admin-eyebrow">Parent access</span>
+        <h2>Enter passcode</h2>
         {% if error == "invalid" %}
         <div class="alert alert-error">Invalid passcode. Try again.</div>
         {% endif %}
-        
+
         <form action="/admin/login" method="post" class="login-form">
             <div class="form-group">
-                <label for="passcode">Enter Passcode:</label>
+                <label for="passcode">Passcode</label>
                 <input type="password" id="passcode" name="passcode" required autofocus>
             </div>
             <button type="submit" class="btn btn-primary">Login</button>

@@ -1,21 +1,34 @@
 {% extends "base.html" %}
 
 {% block title %}Chore Tracker - Admin{% endblock %}
-{% block header %}⚙️ Admin Dashboard{% endblock %}
+{% block header %}Admin{% endblock %}
 
 {% block content %}
-<div class="container">
-    <section class="metrics-grid" aria-label="Chore tracker metrics">
-        <div class="metric-card">
+<div class="container admin-shell">
+    <section class="admin-hero">
+        <div>
+            <span class="admin-eyebrow">Parent control panel</span>
+            <h2>Review what needs attention, then tune the system.</h2>
+        </div>
+        <div class="admin-hero-actions">
+            <a href="/kid" class="btn btn-outline">Kid View</a>
+            <form action="/admin/logout" method="post">
+                <button type="submit" class="btn btn-outline">Logout</button>
+            </form>
+        </div>
+    </section>
+
+    <section class="metrics-grid admin-metrics" aria-label="Chore tracker metrics">
+        <div class="metric-card metric-card-primary">
             <span class="metric-label">Current Coins</span>
-            <strong>{{ metrics.total_coins }}</strong>
+            <strong>{{ metrics.total_coins|int }}</strong>
         </div>
         <div class="metric-card">
-            <span class="metric-label">Pending Chores</span>
+            <span class="metric-label">Chores Waiting</span>
             <strong>{{ metrics.pending_chores }}</strong>
         </div>
         <div class="metric-card">
-            <span class="metric-label">Pending Rewards</span>
+            <span class="metric-label">Rewards Waiting</span>
             <strong>{{ metrics.pending_rewards }}</strong>
         </div>
         <div class="metric-card">
@@ -23,133 +36,218 @@
             <strong>{{ metrics.active_chores }}</strong>
         </div>
         <div class="metric-card">
-            <span class="metric-label">Approved Chores</span>
-            <strong>{{ metrics.approved_chores }}</strong>
+            <span class="metric-label">Active Rewards</span>
+            <strong>{{ metrics.active_rewards }}</strong>
         </div>
         <div class="metric-card">
-            <span class="metric-label">Rewards Claimed</span>
-            <strong>{{ metrics.approved_rewards }}</strong>
+            <span class="metric-label">Chores Approved</span>
+            <strong>{{ metrics.approved_chores }}</strong>
         </div>
     </section>
 
-    <!-- Navigation Tabs -->
-    <nav class="admin-nav">
-        <button class="tab-btn active" data-tab="pending-chores">Pending Chores</button>
-        <button class="tab-btn" data-tab="manage-chores">Manage Chores</button>
-        <button class="tab-btn" data-tab="pending-rewards">Pending Rewards</button>
-        <button class="tab-btn" data-tab="manage-rewards">Manage Rewards</button>
-        <button class="tab-btn" data-tab="children">Children</button>
+    <nav class="admin-nav" aria-label="Admin sections">
+        <button class="tab-btn active" data-tab="pending-chores">
+            <span>Chore Review</span>
+            <strong>{{ pending_chores|length }}</strong>
+        </button>
+        <button class="tab-btn" data-tab="pending-rewards">
+            <span>Reward Review</span>
+            <strong>{{ pending_rewards|length }}</strong>
+        </button>
+        <button class="tab-btn" data-tab="manage-chores">
+            <span>Chores</span>
+            <strong>{{ chores|length }}</strong>
+        </button>
+        <button class="tab-btn" data-tab="manage-rewards">
+            <span>Rewards</span>
+            <strong>{{ rewards|length }}</strong>
+        </button>
+        <button class="tab-btn" data-tab="children">
+            <span>Child</span>
+            <strong>{{ children|length }}</strong>
+        </button>
+        <button class="tab-btn" data-tab="tools">
+            <span>Tools</span>
+            <strong>IO</strong>
+        </button>
     </nav>
 
-    <!-- Pending Chore Approvals -->
     <div id="pending-chores" class="tab-content active">
-        <h2>Pending Chore Approvals ({{ pending_chores|length }})</h2>
-        {% if pending_chores %}
-        <div class="approval-list">
-            {% for submission in pending_chores %}
-            <div class="approval-item">
-                <div class="approval-info">
-                    <strong>{{ submission.child.name }}</strong> completed 
-                    <strong>{{ submission.chore.title }}</strong>
-                    <span class="coin-value">(+{{ submission.chore.coin_value|int }} 🪙)</span>
+        <section class="admin-panel">
+            <div class="admin-panel-header">
+                <div>
+                    <span class="admin-section-label">Review queue</span>
+                    <h2>Chore approvals</h2>
                 </div>
-                <div class="approval-actions">
-                    <form action="/admin/chore/approve" method="post" class="inline-form">
-                        <input type="hidden" name="submission_id" value="{{ submission.id }}">
-                        <button type="submit" class="btn btn-success">✓ Approve</button>
-                    </form>
-                    <form action="/admin/chore/deny" method="post" class="inline-form">
-                        <input type="hidden" name="submission_id" value="{{ submission.id }}">
-                        <button type="submit" class="btn btn-danger">✗ Deny</button>
-                    </form>
-                </div>
+                <span class="admin-count-pill">{{ pending_chores|length }} waiting</span>
             </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <p class="empty-state">No pending chore approvals. Great! 🎉</p>
-        {% endif %}
-    </div>
 
-    <!-- Manage Chores -->
-    <div id="manage-chores" class="tab-content">
-        <h2>Manage Chores</h2>
-        
-        <!-- Add New Chore Form -->
-        <div class="admin-form-box">
-            <h3>Add New Chore</h3>
-            <form action="/admin/chore/add" method="post" class="admin-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="chore-title">Title:</label>
-                        <input type="text" id="chore-title" name="title" required>
+            {% if pending_chores %}
+            <div class="approval-list">
+                {% for submission in pending_chores %}
+                <article class="approval-item">
+                    <div class="approval-info">
+                        <span class="admin-mini-label">{{ submission.child.name }}</span>
+                        <strong>{{ submission.chore.title }}</strong>
+                        <span>{{ submission.chore.room or 'General' }} / +{{ submission.chore.coin_value|int }} coins / +1 play pass</span>
                     </div>
-                    <div class="form-group">
-                        <label for="chore-room">Room:</label>
-                        <input type="text" id="chore-room" name="room" value="General" list="room-suggestions" required>
+                    <div class="approval-actions">
+                        <form action="/admin/chore/approve" method="post" class="inline-form">
+                            <input type="hidden" name="submission_id" value="{{ submission.id }}">
+                            <button type="submit" class="btn btn-success">Approve</button>
+                        </form>
+                        <form action="/admin/chore/deny" method="post" class="inline-form">
+                            <input type="hidden" name="submission_id" value="{{ submission.id }}">
+                            <button type="submit" class="btn btn-danger">Deny</button>
+                        </form>
                     </div>
-                    <div class="form-group">
-                        <label for="chore-coin-value">Coins:</label>
-                        <input type="number" id="chore-coin-value" name="coin_value" step="1" value="1.0" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="chore-description">Description:</label>
-                    <textarea id="chore-description" name="description" rows="2"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Add Chore</button>
-            </form>
-        </div>
-
-        <!-- Existing Chores Bulk Editor -->
-        <form action="/admin/chore/bulk-edit" method="post" class="bulk-edit-form">
-        <div class="bulk-edit-toolbar">
-            <div>
-                <h3>Bulk Edit Chores</h3>
-                <p>Edit rows directly, then save everything at once.</p>
-            </div>
-            <div class="bulk-edit-actions">
-                <button type="submit" class="btn btn-primary">Save All Changes</button>
-                <button type="submit" class="btn btn-danger"
-                        formaction="/admin/chore/bulk-delete"
-                        onclick="return confirm('Delete selected chores? They will be archived from the kid dashboard, but history will stay.')">
-                    Delete Selected
-                </button>
-            </div>
-        </div>
-        <div class="bulk-edit-list">
-            {% for chore in chores %}
-            <div class="bulk-edit-row">
-                <label class="bulk-select">
-                    <input type="checkbox" name="selected_ids" value="{{ chore.id }}">
-                    <span class="sr-only">Select {{ chore.title }}</span>
-                </label>
-                <input type="hidden" name="chore_id" value="{{ chore.id }}">
-                <div class="form-group">
-                    <label for="bulk-chore-title-{{ chore.id }}">Title</label>
-                    <input type="text" id="bulk-chore-title-{{ chore.id }}" name="title" value="{{ chore.title }}" required>
-                </div>
-                <div class="form-group">
-                    <label for="bulk-chore-room-{{ chore.id }}">Room</label>
-                    <input type="text" id="bulk-chore-room-{{ chore.id }}" name="room" value="{{ chore.room or 'General' }}" list="room-suggestions" required>
-                </div>
-                <div class="form-group">
-                    <label for="bulk-chore-coins-{{ chore.id }}">Coins</label>
-                    <input type="number" id="bulk-chore-coins-{{ chore.id }}" name="coin_value" step="1" value="{{ chore.coin_value }}" required>
-                </div>
-                <div class="form-group bulk-description">
-                    <label for="bulk-chore-description-{{ chore.id }}">Description</label>
-                    <textarea id="bulk-chore-description-{{ chore.id }}" name="description" rows="2">{{ chore.description }}</textarea>
-                </div>
-                <label class="checkbox-row bulk-active">
-                    <input type="checkbox" name="active_ids" value="{{ chore.id }}" {% if chore.active %}checked{% endif %}>
-                    Active
-                </label>
+                </article>
+                {% endfor %}
             </div>
             {% else %}
-            <p class="empty-state">No chores yet.</p>
-            {% endfor %}
-        </div>
+            <p class="empty-state">No chore approvals waiting.</p>
+            {% endif %}
+        </section>
+    </div>
+
+    <div id="pending-rewards" class="tab-content">
+        <section class="admin-panel">
+            <div class="admin-panel-header">
+                <div>
+                    <span class="admin-section-label">Review queue</span>
+                    <h2>Reward requests</h2>
+                </div>
+                <span class="admin-count-pill">{{ pending_rewards|length }} waiting</span>
+            </div>
+
+            {% if pending_rewards %}
+            <div class="approval-list">
+                {% for redemption in pending_rewards %}
+                <article class="approval-item">
+                    <div class="approval-info">
+                        <span class="admin-mini-label">{{ redemption.child.name }}</span>
+                        <strong>{{ redemption.reward.title }}</strong>
+                        {% if redemption.reward.title|trim|lower == 'request switch' %}
+                        <span>Daily routine reward / no coin charge</span>
+                        {% else %}
+                        <span>-{{ redemption.reward.coin_cost|int }} coins when approved</span>
+                        {% endif %}
+                    </div>
+                    <div class="approval-actions">
+                        <form action="/admin/reward/approve" method="post" class="inline-form">
+                            <input type="hidden" name="redemption_id" value="{{ redemption.id }}">
+                            <button type="submit" class="btn btn-success">Approve</button>
+                        </form>
+                        <form action="/admin/reward/deny" method="post" class="inline-form">
+                            <input type="hidden" name="redemption_id" value="{{ redemption.id }}">
+                            <button type="submit" class="btn btn-danger">Deny</button>
+                        </form>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="empty-state">No reward requests waiting.</p>
+            {% endif %}
+        </section>
+    </div>
+
+    <div id="manage-chores" class="tab-content">
+        <section class="admin-grid-two">
+            <div class="admin-panel">
+                <div class="admin-panel-header">
+                    <div>
+                        <span class="admin-section-label">Create</span>
+                        <h2>Add chore</h2>
+                    </div>
+                </div>
+                <form action="/admin/chore/add" method="post" class="admin-form">
+                    <div class="form-row form-row-compact">
+                        <div class="form-group">
+                            <label for="chore-title">Title</label>
+                            <input type="text" id="chore-title" name="title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="chore-room">Room</label>
+                            <input type="text" id="chore-room" name="room" value="General" list="room-suggestions" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="chore-coin-value">Coins</label>
+                            <input type="number" id="chore-coin-value" name="coin_value" step="1" value="1.0" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="chore-description">Description</label>
+                        <textarea id="chore-description" name="description" rows="2"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Chore</button>
+                </form>
+            </div>
+
+            <div class="admin-panel admin-panel-muted">
+                <div class="admin-panel-header">
+                    <div>
+                        <span class="admin-section-label">Snapshot</span>
+                        <h2>Chore status</h2>
+                    </div>
+                </div>
+                <div class="admin-stat-stack">
+                    <span><strong>{{ metrics.active_chores }}</strong> active</span>
+                    <span><strong>{{ metrics.inactive_chores }}</strong> archived</span>
+                    <span><strong>{{ metrics.denied_chores }}</strong> denied submissions</span>
+                </div>
+            </div>
+        </section>
+
+        <form action="/admin/chore/bulk-edit" method="post" class="bulk-edit-form admin-panel">
+            <div class="bulk-edit-toolbar">
+                <div>
+                    <span class="admin-section-label">Manage</span>
+                    <h2>Chore list</h2>
+                </div>
+                <div class="bulk-edit-actions">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="submit" class="btn btn-danger"
+                            formaction="/admin/chore/bulk-delete"
+                            onclick="return confirm('Archive selected chores? History will stay.')">
+                        Archive Selected
+                    </button>
+                </div>
+            </div>
+
+            <div class="bulk-edit-list">
+                {% for chore in chores %}
+                <article class="bulk-edit-row bulk-edit-row-chore {% if not chore.active %}is-archived{% endif %}">
+                    <label class="bulk-select">
+                        <input type="checkbox" name="selected_ids" value="{{ chore.id }}">
+                        <span class="sr-only">Select {{ chore.title }}</span>
+                    </label>
+                    <input type="hidden" name="chore_id" value="{{ chore.id }}">
+                    <div class="form-group">
+                        <label for="bulk-chore-title-{{ chore.id }}">Title</label>
+                        <input type="text" id="bulk-chore-title-{{ chore.id }}" name="title" value="{{ chore.title }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bulk-chore-room-{{ chore.id }}">Room</label>
+                        <input type="text" id="bulk-chore-room-{{ chore.id }}" name="room" value="{{ chore.room or 'General' }}" list="room-suggestions" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bulk-chore-coins-{{ chore.id }}">Coins</label>
+                        <input type="number" id="bulk-chore-coins-{{ chore.id }}" name="coin_value" step="1" value="{{ chore.coin_value }}" required>
+                    </div>
+                    <div class="form-group bulk-description">
+                        <label for="bulk-chore-description-{{ chore.id }}">Description</label>
+                        <textarea id="bulk-chore-description-{{ chore.id }}" name="description" rows="2">{{ chore.description }}</textarea>
+                    </div>
+                    <label class="checkbox-row bulk-active">
+                        <input type="checkbox" name="active_ids" value="{{ chore.id }}" {% if chore.active %}checked{% endif %}>
+                        Active
+                    </label>
+                </article>
+                {% else %}
+                <p class="empty-state">No chores yet.</p>
+                {% endfor %}
+            </div>
         </form>
     </div>
 
@@ -161,243 +259,265 @@
         <option value="General"></option>
     </datalist>
 
-    <!-- Pending Reward Redemptions -->
-    <div id="pending-rewards" class="tab-content">
-        <h2>Pending Reward Requests ({{ pending_rewards|length }})</h2>
-        {% if pending_rewards %}
-        <div class="approval-list">
-            {% for redemption in pending_rewards %}
-            <div class="approval-item">
-                <div class="approval-info">
-                    <strong>{{ redemption.child.name }}</strong> wants 
-                    <strong>{{ redemption.reward.title }}</strong>
-                    {% if redemption.reward.title|trim|lower == 'request switch' %}
-                    <span class="coin-value">Daily routine — no coins</span>
-                    {% else %}
-                    <span class="coin-value">(-{{ redemption.reward.coin_cost|int }} 🪙)</span>
-                    {% endif %}
-                </div>
-                <div class="approval-actions">
-                    <form action="/admin/reward/approve" method="post" class="inline-form">
-                        <input type="hidden" name="redemption_id" value="{{ redemption.id }}">
-                        <button type="submit" class="btn btn-success">✓ Approve</button>
-                    </form>
-                    <form action="/admin/reward/deny" method="post" class="inline-form">
-                        <input type="hidden" name="redemption_id" value="{{ redemption.id }}">
-                        <button type="submit" class="btn btn-danger">✗ Deny</button>
-                    </form>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <p class="empty-state">No pending reward requests. 🎉</p>
-        {% endif %}
-    </div>
-
-    <!-- Manage Rewards -->
     <div id="manage-rewards" class="tab-content">
-        <h2>Manage Rewards</h2>
-        
-        <!-- Add New Reward Form -->
-        <div class="admin-form-box">
-            <h3>Add New Reward</h3>
-            <form action="/admin/reward/add" method="post" class="admin-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="reward-title">Title:</label>
-                        <input type="text" id="reward-title" name="title" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="reward-coin-cost">Coin Cost:</label>
-                        <input type="number" id="reward-coin-cost" name="coin_cost" step="1" value="1.0" required>
+        <section class="admin-grid-two">
+            <div class="admin-panel">
+                <div class="admin-panel-header">
+                    <div>
+                        <span class="admin-section-label">Create</span>
+                        <h2>Add reward</h2>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="reward-description">Description:</label>
-                    <textarea id="reward-description" name="description" rows="2"></textarea>
+                <form action="/admin/reward/add" method="post" class="admin-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="reward-title">Title</label>
+                            <input type="text" id="reward-title" name="title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reward-coin-cost">Coin cost</label>
+                            <input type="number" id="reward-coin-cost" name="coin_cost" step="1" value="1.0" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="reward-description">Description</label>
+                        <textarea id="reward-description" name="description" rows="2"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Reward</button>
+                </form>
+            </div>
+
+            <div class="admin-panel admin-panel-muted">
+                <div class="admin-panel-header">
+                    <div>
+                        <span class="admin-section-label">Snapshot</span>
+                        <h2>Reward status</h2>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Add Reward</button>
-            </form>
-        </div>
+                <div class="admin-stat-stack">
+                    <span><strong>{{ metrics.active_rewards }}</strong> active</span>
+                    <span><strong>{{ (rewards|length) - metrics.active_rewards }}</strong> archived</span>
+                    <span><strong>{{ metrics.approved_rewards }}</strong> claimed</span>
+                </div>
+            </div>
+        </section>
 
-    <!-- Existing Rewards Bulk Editor -->
-    <form action="/admin/reward/bulk-edit" method="post" class="bulk-edit-form">
-    <div class="bulk-edit-toolbar">
-        <div>
-            <h3>Bulk Edit Rewards</h3>
-            <p>Edit rows directly, then save everything at once.</p>
-        </div>
-        <div class="bulk-edit-actions">
-            <button type="submit" class="btn btn-primary">Save All Changes</button>
-            <button type="submit" class="btn btn-danger"
-                    formaction="/admin/reward/bulk-delete"
-                    onclick="return confirm('Delete selected rewards? They will be archived from the kid dashboard, but history will stay.')">
-                Delete Selected
-            </button>
-        </div>
-    </div>
-    <div class="bulk-edit-list">
-        {% for reward in rewards %}
-        <div class="bulk-edit-row bulk-edit-row-reward">
-            <label class="bulk-select">
-                <input type="checkbox" name="selected_ids" value="{{ reward.id }}">
-                <span class="sr-only">Select {{ reward.title }}</span>
-            </label>
-            <input type="hidden" name="reward_id" value="{{ reward.id }}">
-            <div class="form-group">
-                <label for="bulk-reward-title-{{ reward.id }}">Title</label>
-                <input type="text" id="bulk-reward-title-{{ reward.id }}" name="title" value="{{ reward.title }}" required>
+        <form action="/admin/reward/bulk-edit" method="post" class="bulk-edit-form admin-panel">
+            <div class="bulk-edit-toolbar">
+                <div>
+                    <span class="admin-section-label">Manage</span>
+                    <h2>Reward list</h2>
+                </div>
+                <div class="bulk-edit-actions">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="submit" class="btn btn-danger"
+                            formaction="/admin/reward/bulk-delete"
+                            onclick="return confirm('Archive selected rewards? History will stay.')">
+                        Archive Selected
+                    </button>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="bulk-reward-cost-{{ reward.id }}">Coin Cost</label>
-                <input type="number" id="bulk-reward-cost-{{ reward.id }}" name="coin_cost" step="1" value="{{ reward.coin_cost }}" required>
-            </div>
-            <div class="form-group bulk-description">
-                <label for="edit-reward-description-{{ reward.id }}">Description</label>
-                <textarea id="edit-reward-description-{{ reward.id }}" name="description" rows="2">{{ reward.description }}</textarea>
-            </div>
-            <label class="checkbox-row bulk-active">
-                <input type="checkbox" name="active_ids" value="{{ reward.id }}" {% if reward.active %}checked{% endif %}>
-                Active
-            </label>
-        </div>
-        {% else %}
-        <p class="empty-state">No rewards yet.</p>
-        {% endfor %}
-    </div>
-    </form>
-</div>
 
-    <!-- Children -->
+            <div class="bulk-edit-list">
+                {% for reward in rewards %}
+                <article class="bulk-edit-row bulk-edit-row-reward {% if not reward.active %}is-archived{% endif %}">
+                    <label class="bulk-select">
+                        <input type="checkbox" name="selected_ids" value="{{ reward.id }}">
+                        <span class="sr-only">Select {{ reward.title }}</span>
+                    </label>
+                    <input type="hidden" name="reward_id" value="{{ reward.id }}">
+                    <div class="form-group">
+                        <label for="bulk-reward-title-{{ reward.id }}">Title</label>
+                        <input type="text" id="bulk-reward-title-{{ reward.id }}" name="title" value="{{ reward.title }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bulk-reward-cost-{{ reward.id }}">Cost</label>
+                        <input type="number" id="bulk-reward-cost-{{ reward.id }}" name="coin_cost" step="1" value="{{ reward.coin_cost }}" required>
+                    </div>
+                    <div class="form-group bulk-description">
+                        <label for="edit-reward-description-{{ reward.id }}">Description</label>
+                        <textarea id="edit-reward-description-{{ reward.id }}" name="description" rows="2">{{ reward.description }}</textarea>
+                    </div>
+                    <label class="checkbox-row bulk-active">
+                        <input type="checkbox" name="active_ids" value="{{ reward.id }}" {% if reward.active %}checked{% endif %}>
+                        Active
+                    </label>
+                </article>
+                {% else %}
+                <p class="empty-state">No rewards yet.</p>
+                {% endfor %}
+            </div>
+        </form>
+    </div>
+
     <div id="children" class="tab-content">
-        <h2>Children</h2>
-        <div class="admin-form-box">
-            <h3>Child Name</h3>
-            {% set primary_child = children[0] if children else None %}
-            <form action="/admin/child/name" method="post" class="admin-form">
-                <input type="hidden" name="child_id" value="{{ primary_child.id if primary_child else 0 }}">
-                <div class="form-group">
-                    <label for="child-name">Name:</label>
-                    <input type="text" id="child-name" name="name" value="{{ primary_child.name if primary_child else 'Child' }}" required>
+        {% set primary_child = children[0] if children else None %}
+        <section class="admin-grid-two">
+            <div class="admin-panel">
+                <div class="admin-panel-header">
+                    <div>
+                        <span class="admin-section-label">Profile</span>
+                        <h2>Child name</h2>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Save Name</button>
-            </form>
-        </div>
-        <div class="manage-list">
-            {% for child in children %}
-            <div class="manage-item">
-                <div class="manage-info">
-                    <strong>{{ child.name }}</strong>
-                    <span class="coin-value">{{ child.coins|int }} 🪙</span>
-                    <span class="room-badge">{{ child.game_tickets }} play pass{% if child.game_tickets != 1 %}es{% endif %}</span>
+                <form action="/admin/child/name" method="post" class="admin-form">
+                    <input type="hidden" name="child_id" value="{{ primary_child.id if primary_child else 0 }}">
+                    <div class="form-group">
+                        <label for="child-name">Name</label>
+                        <input type="text" id="child-name" name="name" value="{{ primary_child.name if primary_child else 'Child' }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Name</button>
+                </form>
+            </div>
+
+            <div class="admin-panel admin-panel-muted">
+                <div class="admin-panel-header">
+                    <div>
+                        <span class="admin-section-label">Quick state</span>
+                        <h2>Balances</h2>
+                    </div>
                 </div>
-                <div class="manage-actions">
-                    <form action="/admin/coins/set" method="post" class="inline-form">
-                        <input type="hidden" name="child_id" value="{{ child.id }}">
-                        <label class="sr-only" for="child-coins-{{ child.id }}">{{ child.name }}'s coin balance</label>
-                        <input type="number" id="child-coins-{{ child.id }}" name="amount" min="0" step="1" value="{{ child.coins|int }}" required>
-                        <button type="submit" class="btn btn-primary">Set Coins</button>
-                    </form>
-                    <form action="/admin/coins/reset-child" method="post" class="inline-form">
-                        <input type="hidden" name="child_id" value="{{ child.id }}">
-                        <button type="submit" class="btn btn-outline" onclick="return confirm('Reset {{ child.name }}\'s coins to 0?')">Reset Coins</button>
-                    </form>
-                    <form action="/admin/tickets/reset-child" method="post" class="inline-form">
-                        <input type="hidden" name="child_id" value="{{ child.id }}">
-                        <button type="submit" class="btn btn-outline" onclick="return confirm('Reset {{ child.name }}\'s play passes to 0?')">Reset Passes</button>
-                    </form>
-                    <form action="/admin/daily-routine/reset" method="post" class="inline-form">
-                        <input type="hidden" name="child_id" value="{{ child.id }}">
-                        <button type="submit" class="btn btn-danger" onclick="return confirm('Reset today\'s Switch checklist for {{ child.name }}? This also cancels any pending Switch request.')">Reset Daily Switch</button>
-                    </form>
+                <div class="manage-list">
+                    {% for child in children %}
+                    <article class="manage-item child-balance-row">
+                        <div class="manage-info">
+                            <strong>{{ child.name }}</strong>
+                            <span class="room-badge">{{ child.coins|int }} coins</span>
+                            <span class="room-badge">{{ child.game_tickets }} pass{% if child.game_tickets != 1 %}es{% endif %}</span>
+                        </div>
+                        <div class="manage-actions">
+                            <form action="/admin/coins/set" method="post" class="inline-form compact-set-form">
+                                <input type="hidden" name="child_id" value="{{ child.id }}">
+                                <label class="sr-only" for="child-coins-{{ child.id }}">{{ child.name }} coin balance</label>
+                                <input type="number" id="child-coins-{{ child.id }}" name="amount" min="0" step="1" value="{{ child.coins|int }}" required>
+                                <button type="submit" class="btn btn-primary">Set</button>
+                            </form>
+                            <form action="/admin/coins/reset-child" method="post" class="inline-form">
+                                <input type="hidden" name="child_id" value="{{ child.id }}">
+                                <button type="submit" class="btn btn-outline" onclick="return confirm('Reset this coin balance to 0?')">Reset Coins</button>
+                            </form>
+                            <form action="/admin/tickets/reset-child" method="post" class="inline-form">
+                                <input type="hidden" name="child_id" value="{{ child.id }}">
+                                <button type="submit" class="btn btn-outline" onclick="return confirm('Reset play passes to 0?')">Reset Passes</button>
+                            </form>
+                            <form action="/admin/daily-routine/reset" method="post" class="inline-form">
+                                <input type="hidden" name="child_id" value="{{ child.id }}">
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Reset the daily Switch checklist and cancel any pending Switch request?')">Reset Switch</button>
+                            </form>
+                        </div>
+                    </article>
+                    {% else %}
+                    <p class="empty-state">No child profile yet.</p>
+                    {% endfor %}
                 </div>
             </div>
-            {% endfor %}
-        </div>
-        <div class="admin-form-box">
-            <h3>Give Bonus Coins</h3>
-            <p>Use this for helpful things that are worth a reward but are not on the chore list.</p>
-            {% if children %}
-            <form action="/admin/coins/award" method="post" class="admin-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="bonus-child">Child:</label>
-                        <select id="bonus-child" name="child_id" required>
-                            {% for child in children %}
-                            <option value="{{ child.id }}">{{ child.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="bonus-amount">Coins to give:</label>
-                        <input type="number" id="bonus-amount" name="amount" min="1" step="1" required>
+        </section>
+
+        <section class="admin-action-grid">
+            <div class="admin-panel">
+                <div class="admin-panel-header">
+                    <div>
+                        <span class="admin-section-label">Coins</span>
+                        <h2>Give bonus</h2>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-success">Give Coins</button>
-            </form>
-            {% endif %}
-        </div>
-        <div class="admin-form-box">
-            <h3>Subtract Behavior Points</h3>
-            <p>Subtract coins and save a reason that appears on the kid dashboard.</p>
-            {% if children %}
-            <form action="/admin/coins/penalty" method="post" class="admin-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="penalty-child">Child:</label>
-                        <select id="penalty-child" name="child_id" required>
-                            {% for child in children %}
-                            <option value="{{ child.id }}">{{ child.name }}</option>
-                            {% endfor %}
-                        </select>
+                {% if children %}
+                <form action="/admin/coins/award" method="post" class="admin-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="bonus-child">Child</label>
+                            <select id="bonus-child" name="child_id" required>
+                                {% for child in children %}
+                                <option value="{{ child.id }}">{{ child.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="bonus-amount">Coins</label>
+                            <input type="number" id="bonus-amount" name="amount" min="1" step="1" required>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="penalty-amount">Coins to subtract:</label>
-                        <input type="number" id="penalty-amount" name="amount" min="1" step="1" value="20" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="penalty-reason">Reason:</label>
-                    <textarea id="penalty-reason" name="reason" rows="2" required placeholder="What happened?"></textarea>
-                </div>
-                <button type="submit" class="btn btn-danger"
-                        onclick="return confirm('Subtract these coins and show this reason on the kid dashboard?')">
-                    Subtract Points
-                </button>
-            </form>
-            {% endif %}
-        </div>
-        <div class="admin-form-box">
-            <h3>Give Play Passes</h3>
-            <p>Give game tickets directly for a bonus or a special occasion.</p>
-            {% if children %}
-            <form action="/admin/tickets/award" method="post" class="admin-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="ticket-child">Child:</label>
-                        <select id="ticket-child" name="child_id" required>
-                            {% for child in children %}
-                            <option value="{{ child.id }}">{{ child.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="ticket-amount">Play passes to give:</label>
-                        <input type="number" id="ticket-amount" name="amount" min="1" step="1" required>
+                    <button type="submit" class="btn btn-success">Give Coins</button>
+                </form>
+                {% endif %}
+            </div>
+
+            <div class="admin-panel behavior-panel">
+                <div class="admin-panel-header">
+                    <div>
+                        <span class="admin-section-label">Behavior</span>
+                        <h2>Subtract points</h2>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-success">Give Play Passes</button>
-            </form>
-            {% endif %}
-        </div>
-        <div class="admin-form-box">
-            <h3>Plinko Rewards</h3>
-            <p>Set each slot's coin prize and weight. Higher weight means that slot is more likely.</p>
+                {% if children %}
+                <form action="/admin/coins/penalty" method="post" class="admin-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="penalty-child">Child</label>
+                            <select id="penalty-child" name="child_id" required>
+                                {% for child in children %}
+                                <option value="{{ child.id }}">{{ child.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="penalty-amount">Coins</label>
+                            <input type="number" id="penalty-amount" name="amount" min="1" step="1" value="20" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="penalty-reason">Reason shown to kid</label>
+                        <textarea id="penalty-reason" name="reason" rows="2" required placeholder="What happened?"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-danger"
+                            onclick="return confirm('Subtract these coins and show the reason on the kid dashboard?')">
+                        Subtract Points
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+
+            <div class="admin-panel">
+                <div class="admin-panel-header">
+                    <div>
+                        <span class="admin-section-label">Fun Zone</span>
+                        <h2>Give play passes</h2>
+                    </div>
+                </div>
+                {% if children %}
+                <form action="/admin/tickets/award" method="post" class="admin-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ticket-child">Child</label>
+                            <select id="ticket-child" name="child_id" required>
+                                {% for child in children %}
+                                <option value="{{ child.id }}">{{ child.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="ticket-amount">Passes</label>
+                            <input type="number" id="ticket-amount" name="amount" min="1" step="1" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success">Give Passes</button>
+                </form>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="admin-panel">
+            <div class="admin-panel-header">
+                <div>
+                    <span class="admin-section-label">Plinko</span>
+                    <h2>Reward zone amounts</h2>
+                </div>
+                <span class="admin-count-pill">{{ plinko_slots|length }} slots</span>
+            </div>
             <form action="/admin/plinko/update" method="post" class="admin-form">
                 <div class="plinko-admin-grid">
                     {% for slot in plinko_slots %}
-                    <div class="plinko-admin-row">
+                    <article class="plinko-admin-row">
                         <strong>Slot {{ slot.position + 1 }}</strong>
                         <input type="hidden" name="slot_id" value="{{ slot.id }}">
                         <div class="form-group">
@@ -412,54 +532,66 @@
                             <input type="checkbox" name="active_ids" value="{{ slot.id }}" {% if slot.active %}checked{% endif %}>
                             Active
                         </label>
-                    </div>
+                    </article>
                     {% endfor %}
                 </div>
-                <button type="submit" class="btn btn-primary">Save Plinko Rewards</button>
+                <button type="submit" class="btn btn-primary">Save Plinko</button>
             </form>
-        </div>
+        </section>
     </div>
-    <div class="admin-form-box">
-        <h3>Admin Tools</h3>
 
-        <div class="form-row">
-            <a href="/admin/export" class="btn btn-primary">
-                Export Chores & Rewards
-            </a>
-        </div>
-
-        <form action="/admin/import" method="post" enctype="multipart/form-data" class="admin-form">
-            <div class="form-group">
-                <label for="backup-file">Import Chores & Rewards JSON:</label>
-                <input type="file" id="backup-file" name="backup_file" accept="application/json,.json" required>
+    <div id="tools" class="tab-content">
+        <section class="admin-action-grid">
+            <div class="admin-panel">
+                <div class="admin-panel-header">
+                    <div>
+                        <span class="admin-section-label">Backup</span>
+                        <h2>Export</h2>
+                    </div>
+                </div>
+                <a href="/admin/export" class="btn btn-primary">Export Chores and Rewards</a>
             </div>
 
-            <button type="submit" class="btn btn-outline"
-                    onclick="return confirm('Import this backup? Existing matching chores/rewards will be updated, and missing ones will be added.')">
-                Import Backup
-            </button>
-        </form>
+            <div class="admin-panel">
+                <div class="admin-panel-header">
+                    <div>
+                        <span class="admin-section-label">Restore</span>
+                        <h2>Import</h2>
+                    </div>
+                </div>
+                <form action="/admin/import" method="post" enctype="multipart/form-data" class="admin-form">
+                    <div class="form-group">
+                        <label for="backup-file">JSON backup</label>
+                        <input type="file" id="backup-file" name="backup_file" accept="application/json,.json" required>
+                    </div>
+                    <button type="submit" class="btn btn-outline"
+                            onclick="return confirm('Import this backup? Matching chores and rewards will update.')">
+                        Import Backup
+                    </button>
+                </form>
+            </div>
 
-        <form action="/admin/coins/reset" method="post" class="admin-form">
-            <button type="submit" class="btn btn-danger"
-                    onclick="return confirm('Reset all child coin balances to 0? This cannot be undone.')">
-                Reset All Coins
-            </button>
-        </form>
-    </div>
-
-    <!-- Logout -->
-    <div class="logout-section">
-        <form action="/admin/logout" method="post">
-            <button type="submit" class="btn btn-outline">Logout</button>
-        </form>
+            <div class="admin-panel danger-zone">
+                <div class="admin-panel-header">
+                    <div>
+                        <span class="admin-section-label">Reset</span>
+                        <h2>All coins</h2>
+                    </div>
+                </div>
+                <form action="/admin/coins/reset" method="post" class="admin-form">
+                    <button type="submit" class="btn btn-danger"
+                            onclick="return confirm('Reset all child coin balances to 0? This cannot be undone.')">
+                        Reset All Coins
+                    </button>
+                </form>
+            </div>
+        </section>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-// Tab navigation
 function activateTab(tabId, updateUrl = true) {
     const tabButton = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
     const tabContent = document.getElementById(tabId);
@@ -480,43 +612,13 @@ function activateTab(tabId, updateUrl = true) {
     }
 }
 
-document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        activateTab(this.dataset.tab);
-    });
+document.querySelectorAll('.tab-btn').forEach(button => {
+    button.addEventListener('click', () => activateTab(button.dataset.tab));
 });
 
 const initialTab = new URLSearchParams(window.location.search).get('tab');
 if (initialTab) {
     activateTab(initialTab, false);
 }
-
-document.querySelectorAll('.edit-chore-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const form = document.getElementById('edit-chore-' + this.dataset.choreId);
-        form.classList.add('is-open');
-        form.querySelector('input[name="title"]').focus();
-    });
-});
-
-document.querySelectorAll('.cancel-edit-chore-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        document.getElementById('edit-chore-' + this.dataset.choreId).classList.remove('is-open');
-    });
-});
-
-document.querySelectorAll('.edit-reward-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const form = document.getElementById('edit-reward-' + this.dataset.rewardId);
-        form.classList.add('is-open');
-        form.querySelector('input[name="title"]').focus();
-    });
-});
-
-document.querySelectorAll('.cancel-edit-reward-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        document.getElementById('edit-reward-' + this.dataset.rewardId).classList.remove('is-open');
-    });
-});
 </script>
 {% endblock %}
