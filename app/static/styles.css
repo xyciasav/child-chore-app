@@ -2032,6 +2032,37 @@ footer {
     margin-bottom: 1rem;
 }
 
+.admin-panel *,
+.admin-form-box * {
+    min-width: 0;
+}
+
+.admin-panel input,
+.admin-panel select,
+.admin-panel textarea,
+.admin-form-box input,
+.admin-form-box select,
+.admin-form-box textarea {
+    width: 100%;
+    max-width: 100%;
+}
+
+.admin-panel select,
+.admin-form-box select {
+    min-height: 46px;
+    padding: 0.65rem 0.75rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #1a202c;
+    font: inherit;
+}
+
+.admin-panel .btn,
+.admin-form-box .btn {
+    min-height: 42px;
+}
+
 .admin-panel-muted {
     background: #f7fafc;
 }
@@ -2071,6 +2102,10 @@ footer {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1rem;
+}
+
+.admin-action-grid .form-row {
+    grid-template-columns: 1fr;
 }
 
 .admin-stat-stack {
@@ -2188,15 +2223,38 @@ footer {
 
 .child-balance-row {
     display: grid;
-    grid-template-columns: minmax(180px, 0.8fr) minmax(320px, 1.2fr);
-    align-items: center;
+    grid-template-columns: 1fr;
+    align-items: stretch;
     gap: 1rem;
     box-shadow: none;
     border: 1px solid #e2e8f0;
 }
 
+.child-balance-row .manage-info {
+    flex-wrap: wrap;
+}
+
+.child-balance-row .manage-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    width: 100%;
+}
+
+.child-balance-row .inline-form {
+    display: block;
+}
+
+.child-balance-row .inline-form .btn {
+    width: 100%;
+    padding-left: 0.65rem;
+    padding-right: 0.65rem;
+    white-space: normal;
+}
+
 .compact-set-form {
-    display: inline-flex;
+    display: grid;
+    grid-template-columns: minmax(80px, 1fr) auto;
     gap: 0.4rem;
     align-items: center;
 }
@@ -2211,12 +2269,13 @@ footer {
 }
 
 .plinko-admin-grid {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
 }
 
 .plinko-admin-row {
     background: #f8fafc;
     border-color: #d9e2ec;
+    overflow: hidden;
 }
 
 .plinko-admin-row strong {
