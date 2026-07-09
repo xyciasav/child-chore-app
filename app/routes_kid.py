@@ -449,9 +449,12 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
 @router.post("/kid/chore/submit")
 async def submit_chore(
     chore_id: int = Form(...),
+    return_tab: str = Form("dashboard"),
     db: AsyncSession = Depends(get_db)
 ):
     """Submit a chore completion for approval."""
+    redirect_url = "/kid?tab=chores" if return_tab == "chores" else "/kid"
+
     # Get default child
     result = await db.execute(select(Child))
     child = result.scalar_one_or_none()
@@ -464,7 +467,7 @@ async def submit_chore(
     chore_result = await db.execute(select(Chore).where(Chore.id == chore_id))
     chore = chore_result.scalar_one_or_none()
     if not chore:
-        return RedirectResponse(url="/kid", status_code=303)
+        return RedirectResponse(url=redirect_url, status_code=303)
 
     # Create submission
     submission = ChoreSubmission(
@@ -475,7 +478,7 @@ async def submit_chore(
     db.add(submission)
     await db.commit()
 
-    return RedirectResponse(url="/kid", status_code=303)
+    return RedirectResponse(url=redirect_url, status_code=303)
 
 
 @router.post("/kid/game/start")

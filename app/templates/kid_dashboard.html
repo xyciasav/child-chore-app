@@ -31,6 +31,7 @@
                     <p>{{ routine.chore.description or 'Complete this to unlock Switch time.' }}</p>
                     <form action="/kid/chore/submit" method="post" class="chore-form">
                         <input type="hidden" name="chore_id" value="{{ routine.chore.id }}">
+                        <input type="hidden" name="return_tab" value="dashboard">
                         <button type="submit" class="btn btn-primary" {% if switch_requirements[loop.index0].complete %}disabled{% endif %}>
                             {% if switch_requirements[loop.index0].complete %}Done Today{% else %}I Did This!{% endif %}
                         </button>
@@ -181,10 +182,29 @@
 
     <!-- Active Chores Section -->
     <section class="section chores-board">
-        <h2>My Chores</h2>
+        <div class="chores-board-header">
+            <h2>My Chores</h2>
+            {% if chore_groups %}
+            <span class="room-filter-count">{{ chore_groups|length }} rooms</span>
+            {% endif %}
+        </div>
+        {% if chore_groups %}
+        <div class="room-filter" aria-label="Choose a room">
+            {% for group in chore_groups %}
+            <button type="button" class="room-filter-btn" data-room-filter="room-{{ loop.index0 }}">
+                <span>{{ group.room }}</span>
+                <strong>{{ group.chores|length }}</strong>
+            </button>
+            {% endfor %}
+            <button type="button" class="room-filter-btn room-filter-all" data-room-filter="all">
+                <span>All rooms</span>
+                <strong>{{ chores|length }}</strong>
+            </button>
+        </div>
+        {% endif %}
         {% for group in chore_groups %}
-        <div class="room-section">
-        <h3 class="room-heading">{{ group.room }}</h3>
+        <div class="room-section" data-room-section="room-{{ loop.index0 }}">
+        <h3 class="room-heading">{{ group.room }} <span>{{ group.chores|length }} chores</span></h3>
         <div class="chore-grid">
             {% for chore in group.chores %}
             <div class="chore-card" data-chore-title="{{ chore.title }}" data-chore-room="{{ group.room }}" data-chore-coins="{{ chore.coin_value }}">
@@ -196,6 +216,7 @@
                 <p class="chore-description">{{ chore.description }}</p>
                 <form action="/kid/chore/submit" method="post" class="chore-form">
                     <input type="hidden" name="chore_id" value="{{ chore.id }}">
+                    <input type="hidden" name="return_tab" value="chores">
                     <button type="submit" class="btn btn-primary">I Did This!</button>
                 </form>
             </div>
@@ -487,7 +508,9 @@ document.querySelectorAll('.kid-tab-btn').forEach(button => {
 });
 
 const initialKidTab = new URLSearchParams(window.location.search).get('tab');
-if (initialKidTab === 'rewards') {
+if (initialKidTab === 'chores') {
+    activateKidTab('kid-chores', false);
+} else if (initialKidTab === 'rewards') {
     activateKidTab('kid-rewards', false);
 } else if (initialKidTab === 'games') {
     activateKidTab('kid-games', false);
@@ -704,6 +727,45 @@ document.addEventListener('keydown', event => {
     }
 });
 
+const roomFilterButtons = Array.from(document.querySelectorAll('[data-room-filter]'));
+const roomSections = Array.from(document.querySelectorAll('[data-room-section]'));
+const savedRoomFilter = localStorage.getItem('kidChoreRoomFilter');
+
+function roomFilterExists(roomKey) {
+    return roomFilterButtons.some(button => button.dataset.roomFilter === roomKey);
+}
+
+function activateRoomFilter(roomKey, shouldSave = true) {
+    if (!roomFilterButtons.length) {
+        return;
+    }
+
+    const activeRoomKey = roomFilterExists(roomKey) ? roomKey : roomFilterButtons[0].dataset.roomFilter;
+
+    roomFilterButtons.forEach(button => {
+        button.classList.toggle('is-active', button.dataset.roomFilter === activeRoomKey);
+        button.setAttribute('aria-pressed', button.dataset.roomFilter === activeRoomKey ? 'true' : 'false');
+    });
+
+    roomSections.forEach(section => {
+        section.hidden = activeRoomKey !== 'all' && section.dataset.roomSection !== activeRoomKey;
+    });
+
+    if (shouldSave) {
+        localStorage.setItem('kidChoreRoomFilter', activeRoomKey);
+    }
+}
+
+if (roomFilterButtons.length) {
+    activateRoomFilter(savedRoomFilter || roomFilterButtons[0].dataset.roomFilter, false);
+
+    roomFilterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            activateRoomFilter(button.dataset.roomFilter);
+        });
+    });
+}
+
 const randomChoreButton = document.getElementById('random-chore-btn');
 const randomChoreResult = document.getElementById('random-chore-result');
 const randomChoreTitle = document.getElementById('random-chore-title');
@@ -715,7 +777,11 @@ let pickedChoreForm = null;
 
 if (randomChoreButton) {
     randomChoreButton.addEventListener('click', () => {
-        const choreCards = Array.from(document.querySelectorAll('.chore-card'));
+        const visibleChoreCards = Array.from(document.querySelectorAll('.chore-card'))
+            .filter(card => !card.closest('[hidden]'));
+        const choreCards = visibleChoreCards.length
+            ? visibleChoreCards
+            : Array.from(document.querySelectorAll('.chore-card'));
 
         if (!choreCards.length) {
             return;

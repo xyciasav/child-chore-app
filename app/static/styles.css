@@ -1538,21 +1538,109 @@ footer {
     border-radius: 8px;
 }
 
+.chores-board-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.chores-board-header h2 {
+    margin: 0;
+}
+
+.room-filter-count {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    color: #4a5568;
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.room-filter {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.65rem;
+    margin-bottom: 1rem;
+}
+
+.room-filter-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    min-height: 48px;
+    padding: 0.65rem 0.8rem;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #2d3748;
+    font: inherit;
+    font-weight: 800;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.room-filter-btn:hover,
+.room-filter-btn.is-active {
+    border-color: #4299e1;
+    box-shadow: 0 6px 18px rgba(66, 153, 225, 0.16);
+    transform: translateY(-1px);
+}
+
+.room-filter-btn.is-active {
+    background: #ebf8ff;
+}
+
+.room-filter-btn strong {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    background: #2b6cb0;
+    color: #ffffff;
+    font-size: 0.82rem;
+}
+
+.room-filter-all strong {
+    background: #4a5568;
+}
+
 .chores-board .room-section {
     padding: 1rem;
     border-radius: 8px;
     background: #edf2f7;
 }
 
+.chores-board .room-section[hidden] {
+    display: none;
+}
+
 .chores-board .room-heading {
     display: inline-flex;
     align-items: center;
+    gap: 0.5rem;
     padding: 0.25rem 0.75rem;
     margin-bottom: 1rem;
     border: 0;
     border-radius: 999px;
     background: white;
     color: #2d3748;
+}
+
+.chores-board .room-heading span {
+    color: #718096;
+    font-size: 0.78rem;
+    font-weight: 800;
 }
 
 .chore-card {
