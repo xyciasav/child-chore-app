@@ -69,7 +69,7 @@
             </div>
             {% if recent_adjustments %}
             <div class="coin-notes">
-                <h3>Coin Notes</h3>
+                <h3>Today's Coin Notes</h3>
                 {% for adjustment in recent_adjustments %}
                 <div class="coin-note {% if adjustment.amount < 0 %}coin-note-negative{% else %}coin-note-positive{% endif %}">
                     <strong>{{ adjustment.amount|int }} 🪙</strong>

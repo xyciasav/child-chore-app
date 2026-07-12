@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 import random
 import secrets
 from zoneinfo import ZoneInfo
@@ -17,6 +17,7 @@ router = APIRouter()
 
 SWITCH_REWARD_TITLE = "request switch"
 PACIFIC_TIMEZONE = ZoneInfo("America/Los_Angeles")
+UTC_TIMEZONE = ZoneInfo("UTC")
 SWITCH_AVAILABLE_TIME = time(hour=9)
 DAILY_SWITCH_REQUIREMENTS = (
     ("Brush teeth", lambda title: "teeth" in title),
@@ -173,9 +174,22 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
     )
     pending_chores = pending_chores_result.scalars().all()
 
+    today_local = datetime.now(PACIFIC_TIMEZONE).date()
+    today_start_utc = (
+        datetime.combine(today_local, time.min, PACIFIC_TIMEZONE)
+        .astimezone(UTC_TIMEZONE)
+        .replace(tzinfo=None)
+    )
+    tomorrow_start_utc = (
+        datetime.combine(today_local + timedelta(days=1), time.min, PACIFIC_TIMEZONE)
+        .astimezone(UTC_TIMEZONE)
+        .replace(tzinfo=None)
+    )
     recent_adjustments_result = await db.execute(
         select(CoinAdjustment)
         .where(CoinAdjustment.child_id == child.id)
+        .where(CoinAdjustment.created_at >= today_start_utc)
+        .where(CoinAdjustment.created_at < tomorrow_start_utc)
         .order_by(CoinAdjustment.created_at.desc())
         .limit(5)
     )

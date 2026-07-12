@@ -693,6 +693,7 @@ async def award_coins(
     request: Request,
     child_id: int = Form(...),
     amount: float = Form(...),
+    reason: str = Form(""),
     db: AsyncSession = Depends(get_db)
 ):
     """Give a child bonus coins for something outside the chore list."""
@@ -702,8 +703,14 @@ async def award_coins(
 
     child_result = await db.execute(select(Child).where(Child.id == child_id))
     child = child_result.scalar_one_or_none()
+    clean_reason = reason.strip() or "Bonus coins"
     if child and amount > 0:
         child.coins += amount
+        db.add(CoinAdjustment(
+            child_id=child.id,
+            amount=amount,
+            reason=clean_reason,
+        ))
         await db.commit()
 
     return RedirectResponse(url=ADMIN_TABS["children"], status_code=303)
