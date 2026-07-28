@@ -350,6 +350,23 @@ footer {
     color: #4a5568;
 }
 
+.daily-switch-request-card.is-unlocked {
+    border-color: #38a169;
+    background: linear-gradient(135deg, #f0fff4, #c6f6d5);
+    box-shadow: 0 6px 20px rgba(56, 161, 105, 0.2);
+}
+
+.daily-switch-request-card.is-unlocked .daily-task-status {
+    color: #276749;
+}
+
+.daily-switch-request-card.is-unlocked .btn:disabled {
+    border-color: #38a169;
+    background: #38a169;
+    color: #ffffff;
+    opacity: 1;
+}
+
 .kid-tabs-top {
     margin: 0 0 1.25rem;
 }
@@ -1536,6 +1553,55 @@ footer {
     background: linear-gradient(135deg, #ffffff, #f0fff4);
     border: 1px solid #c6f6d5;
     border-radius: 8px;
+}
+
+.chore-page-hero-simple {
+    padding: 1rem 1.25rem;
+}
+
+.chores-board-simple {
+    padding-top: 1rem;
+}
+
+.chores-board-simple .room-filter {
+    position: sticky;
+    top: 0.5rem;
+    z-index: 5;
+    display: flex;
+    gap: 0.45rem;
+    overflow-x: auto;
+    padding: 0.4rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 3px 12px rgba(45, 55, 72, 0.08);
+}
+
+.chores-board-simple .room-filter-btn {
+    flex: 0 0 auto;
+    min-height: 42px;
+    padding: 0.45rem 0.65rem;
+}
+
+.chores-board-simple .room-section {
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.chores-board-simple .chore-grid {
+    gap: 0.55rem;
+}
+
+.chores-board-simple .chore-card {
+    padding: 0.75rem;
+}
+
+.chores-board-simple .chore-card h3 {
+    margin: 0 0 0.25rem;
+}
+
+.chores-board-simple .chore-description {
+    margin-bottom: 0.65rem;
 }
 
 .chores-board-header {
