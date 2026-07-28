@@ -212,6 +212,18 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         redemption.reward and is_switch_reward(redemption.reward)
         for redemption in pending_rewards
     )
+    approved_switch_result = await db.execute(
+        select(RewardRedemption)
+        .where(RewardRedemption.child_id == child.id)
+        .where(RewardRedemption.status == RewardRedemptionStatus.APPROVED)
+        .where(RewardRedemption.requested_at >= today_start_utc)
+        .where(RewardRedemption.requested_at < tomorrow_start_utc)
+        .options(selectinload(RewardRedemption.reward))
+    )
+    switch_unlocked = any(
+        redemption.reward and is_switch_reward(redemption.reward)
+        for redemption in approved_switch_result.scalars().all()
+    )
 
         # Build automatic badges from approved chores and current coins
     approved_chores_result = await db.execute(
@@ -236,6 +248,7 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         bool(switch_reward)
         and switch_available
         and not switch_requested
+        and not switch_unlocked
         and all(item["complete"] for item in switch_requirements)
     )
 
@@ -456,6 +469,7 @@ async def kid_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         "switch_requirements": switch_requirements,
         "switch_ready": switch_ready,
         "switch_requested": switch_requested,
+        "switch_unlocked": switch_unlocked,
         "switch_available": switch_available,
     })
 

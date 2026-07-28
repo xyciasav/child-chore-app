@@ -42,15 +42,15 @@
                 </article>
                 {% endfor %}
 
-                <article class="daily-switch-request-card {% if switch_ready %}is-ready{% elif switch_requested %}is-requested{% endif %}">
-                    <span class="daily-task-status">{% if switch_requested %}Requested{% elif switch_ready %}Ready!{% elif not switch_available %}Available at 9 AM{% else %}Locked{% endif %}</span>
-                    <h3>Request Switch</h3>
-                    <p>This is earned by today's routine, not by spending coins.</p>
+                <article class="daily-switch-request-card {% if switch_unlocked %}is-unlocked{% elif switch_ready %}is-ready{% elif switch_requested %}is-requested{% endif %}">
+                    <span class="daily-task-status">{% if switch_unlocked %}✓ Unlocked{% elif switch_requested %}Waiting for approval{% elif switch_ready %}Ready!{% elif not switch_available %}Available at 9 AM{% else %}Locked{% endif %}</span>
+                    <h3>{% if switch_unlocked %}Switch Time Unlocked!{% else %}Request Switch{% endif %}</h3>
+                    <p>{% if switch_unlocked %}Your request was approved. You can play today!{% else %}This is earned by today's routine, not by spending coins.{% endif %}</p>
                     {% if switch_reward %}
                     <form action="/kid/reward/request" method="post" class="reward-form">
                         <input type="hidden" name="reward_id" value="{{ switch_reward.id }}">
                         <button type="submit" class="btn btn-secondary" {% if not switch_ready %}disabled{% endif %}>
-                            {% if switch_requested %}Switch Requested{% elif switch_ready %}Request Switch{% elif not switch_available %}Available at 9:00 AM{% else %}Finish Today's Routine{% endif %}
+                            {% if switch_unlocked %}✓ Approved for Today{% elif switch_requested %}Approval Pending{% elif switch_ready %}Request Switch{% elif not switch_available %}Available at 9:00 AM{% else %}Finish Today's Routine{% endif %}
                         </button>
                     </form>
                     {% else %}
@@ -144,44 +144,16 @@
     </div>
 
     <div id="kid-chores" class="kid-tab-content">
-    <section class="section chore-page-hero">
+    <section class="section chore-page-hero chore-page-hero-simple">
         <div>
-            <span class="daily-switch-eyebrow">Mission board</span>
-            <h2>Pick one helpful thing</h2>
-            <p>Finish a chore, send it for approval, and earn coins when it is checked off.</p>
+            <span class="daily-switch-eyebrow">Chores</span>
+            <h2>What do you want to do?</h2>
+            <p>Pick a room, then tap a chore when you're done.</p>
         </div>
-        <div class="chore-stats" aria-label="Chore status summary">
-            <span><strong>{{ chore_groups|length }}</strong> rooms</span>
-            <span><strong>{{ chores|length }}</strong> chores</span>
-            <span><strong>{{ pending_chores|length }}</strong> waiting</span>
-        </div>
-    </section>
-
-    <!-- Random Chore Spinner -->
-    <section class="section">
-        <div class="spinner-box mission-picker">
-            <h2>Need a mission?</h2>
-            <p>Tap the button and let the chore wheel pick for you.</p>
-
-            <button type="button" class="btn btn-primary" id="random-chore-btn">
-                🎲 Pick a Chore for Me
-            </button>
-
-    <div id="random-chore-result" class="random-chore-result" hidden>
-        <span class="random-label">Your mission:</span>
-        <strong id="random-chore-title"></strong>
-        <span id="random-chore-room"></span>
-        <span id="random-chore-coins"></span>
-
-        <button type="button" class="btn btn-secondary" id="random-chore-start">
-            Start This Mission
-        </button>
-    </div>
-            </div>
     </section>
 
     <!-- Active Chores Section -->
-    <section class="section chores-board">
+    <section class="section chores-board chores-board-simple">
         <div class="chores-board-header">
             <h2>My Chores</h2>
             {% if chore_groups %}
@@ -190,16 +162,16 @@
         </div>
         {% if chore_groups %}
         <div class="room-filter" aria-label="Choose a room">
+            <button type="button" class="room-filter-btn room-filter-all" data-room-filter="all">
+                <span>All</span>
+                <strong>{{ chores|length }}</strong>
+            </button>
             {% for group in chore_groups %}
             <button type="button" class="room-filter-btn" data-room-filter="room-{{ loop.index0 }}">
                 <span>{{ group.room }}</span>
                 <strong>{{ group.chores|length }}</strong>
             </button>
             {% endfor %}
-            <button type="button" class="room-filter-btn room-filter-all" data-room-filter="all">
-                <span>All rooms</span>
-                <strong>{{ chores|length }}</strong>
-            </button>
         </div>
         {% endif %}
         {% for group in chore_groups %}
@@ -757,7 +729,7 @@ function activateRoomFilter(roomKey, shouldSave = true) {
 }
 
 if (roomFilterButtons.length) {
-    activateRoomFilter(savedRoomFilter || roomFilterButtons[0].dataset.roomFilter, false);
+    activateRoomFilter(savedRoomFilter || 'all', false);
 
     roomFilterButtons.forEach(button => {
         button.addEventListener('click', () => {
